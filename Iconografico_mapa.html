@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_568822f5ecb9dda8312db0b3cd466ffe {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+    <style>
+      /* Estilo para os painéis */
+      #acervo-list {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          width: 350px;  /* Aumenta a largura da janela */
+          height: 400px;
+          overflow-y: auto;
+          background-color: white;
+          z-index: 1000;
+          padding: 5px;
+          border: 2px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 50%;  /* Define 50% da largura do mapa */
+          height: 80%;  /* Aumenta a altura da janela */
+          overflow-y: auto;
+          background-color: white;
+          z-index: 2000;
+          padding: 10px;
+          border: 4px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail iframe {
+          width: 100%;  /* Garante que o iframe ocupe toda a largura */
+          height: 600px;  /* Ajusta a altura do iframe para que a cabeça do site seja visível */
+          border: none;
+      }
+      .destaque {
+          font-size: 26px;
+          font-weight: bold;
+          color: #2d2d2d;
+          text-align: center;
+          margin-bottom: 20px;
+      }
+    </style>
+
+    <!-- Painel da lista de acervos -->
+    <div id="acervo-list">
+      <div class="destaque">Olá Usuário! Clique em qualquer região no mapa para carregar a lista de instituições!</div>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <!-- Painel de detalhes do acervo -->
+    <div id="acervo-detail">
+      <div class="destaque">Ao passar o mouse sobre o nome da instituição, os detalhes serão exibidos aqui! Mas atenção: alguns sites possuem proteções de segurança.</div>
+      <p><span style="font-size: 18px;">Caso o site não seja exibido, clique em VISITAR SITE.</span></p>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <script>
+    // Dados dos acervos, injetados a partir do Python
+    var acervos_data = {"S\u00e3o Paulo": [{"nome": "Acervos e Pesquisa Digitais (USP)", "descricao": "Em colabora\u00e7\u00e3o com o projeto Arquigrafia, experimentamos diferentes modelos de Vis\u00e3o Computacional 1 para analisar imagens de um acervo de arquitetura, do qual extra\u00edmos dados sobre arte e design, criando camadas de legibilidade do acervo que n\u00e3o eram vis\u00edveis no formato de sua cataloga\u00e7\u00e3o original. Estes recursos est\u00e3o dispon\u00edveis no prot\u00f3tipo que disponibilizamos no nosso GitHub e aprofundam os experimentos feitos a partir dos v\u00eddeos das c\u00e2meras de seguran\u00e7a do Pal\u00e1cio do Planalto em 8 de janeiro de 2023. (Categoria: Iconogr\u00e1fico)", "site": "http://acervos-digitais.github.io/arquigrafia-interface"}, {"nome": "Banco de Conte\u00fados Culturais", "descricao": "Desde 2009 o Banco de Conte\u00fado Culturais (BCC) oferece acesso a importantes conjuntos de obras audiovisuais, que podem ser contextualizadas e compreendidas \u00e0 luz de outros conte\u00fados da Cinemateca Brasileira, tamb\u00e9m dispon\u00edveis no site, como fotos, cartazes e documentos textuais. (Categoria: Iconogr\u00e1fico)", "site": "http://www.bcc.gov.br/filmes"}, {"nome": "Cinemateca Brasileira (Pesquisa Filmogr\u00e1fica)", "descricao": "Filmografia Brasileira n\u00e3o \u00e9 uma base de acervo. Ela re\u00fane e disponibiliza informa\u00e7\u00f5es sobre a produ\u00e7\u00e3o audiovisual brasileira como um todo. A presen\u00e7a de registros n\u00e3o pressup\u00f5e exist\u00eancia de materiais na Cinemateca Brasileira. (Categoria: Iconogr\u00e1fico)", "site": "http://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/?IsisScript=iah/iah.xis&base=FILMOGRAFIA&lang=p"}, {"nome": "Cinemateca Brasileira ( Cole\u00e7\u00e3o de Cartazes)", "descricao": "Cole\u00e7\u00e3o de cartazes\n Os cartazes de filmes e de eventos cinematogr\u00e1ficos comp\u00f5em uma das cole\u00e7\u00f5es mais importantes do acervo de documentos da Cinemateca Brasileira relacionados \u00e0 produ\u00e7\u00e3o audiovisual. Sendo uma forma consagrada de divulga\u00e7\u00e3o cinematogr\u00e1fica, apreci\u00e1-los em conjunto permite tamb\u00e9m conhecer o desenvolvimento da cria\u00e7\u00e3o gr\u00e1fica nessa \u00e1rea. (Categoria: Iconogr\u00e1fico)", "site": "http://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/?IsisScript=iah/iah.xis&base=CARTAZES&lang=p"}, {"nome": "George Ermakoff ( fotografias)", "descricao": "George Ermakoff: Dono de um acervo de oito mil imagens do Rio antigo, o ex-presidente da empresa a\u00e9rea Rio Sul construiu nova carreira com uma editora que une sua paix\u00e3o por fotos e Hist\u00f3ria (Categoria: Iconogr\u00e1fico)", "site": "http://www.images2you.com.br/v1/"}, {"nome": "Instituto de Estudos Brasileiros (IEB - USP) Acervo", "descricao": "O Acervo do IEB \u00e9 formado por 107 fundos e cole\u00e7\u00f5es, al\u00e9m de vasta documenta\u00e7\u00e3o resultante de pesquisa e documenta\u00e7\u00e3o avulsa e geral. Em termos quantitativos, trata-se de aproximadamente 500 mil documentos no Arquivo, 250 mil livros na Biblioteca e 8 mil objetos na Cole\u00e7\u00e3o de Artes Visuais. (Categoria: Iconogr\u00e1fico)", "site": "https://www.ieb.usp.br/acervo/"}, {"nome": "Instituto Moreira Salles (Fotografia)", "descricao": "Fotografia\n Est\u00e3o dispon\u00edveis cerca de 40 mil imagens para pesquisas online. Na base de dados a visualiza\u00e7\u00e3o das imagens \u00e9 de at\u00e9 200% de amplia\u00e7\u00e3o. As alternativas de a\u00e7\u00e3o s\u00e3o busca livre; busca avan\u00e7ada; e op\u00e7\u00f5es de visualiza\u00e7\u00e3o. (Categoria: Iconogr\u00e1fico)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/#fotografia"}, {"nome": "Instituto Moreira Salles (iconografia)", "descricao": "Iconografia\n Est\u00e3o dispon\u00edveis para pesquisa on-line cerca de 1.800 obras de iconografia brasileira do s\u00e9culo XIX. Voc\u00ea pode realizar buscas livres, avan\u00e7adas, ou navegar pelas categorias mapas, \u00e1lbuns, imagens e textos. O acesso ao banco de dados oferece uma ferramenta de zoom que permite observar as imagens em detalhes. (Categoria: Iconogr\u00e1fico)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/#iconografia"}, {"nome": "Instituto Moreira Salles (M\u00fasica)", "descricao": "M\u00fasica\n A Reserva T\u00e9cnica Musical do IMS tem sob sua guarda 20 acervos de compositores, instrumentistas, pesquisadores e colecionadores, todos dispon\u00edveis para consulta e pesquisa. S\u00e3o nomes como Chiquinha Gonzaga, Baden Powell, Elizeth Cardoso e Jos\u00e9 Ramos Tinhor\u00e3o, entre outros, al\u00e9m dos sites especiais que abrigam toda vida & obra de Ernesto Nazareth e Pixinguinha. (Categoria: Iconogr\u00e1fico)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/#musica"}, {"nome": "Instituto Moreira Salles (arte)", "descricao": "Arte Contempor\u00e2nea\n A cole\u00e7\u00e3o Contempor\u00e2nea possui cerca de 1.500 obras de mais de 30 titulares, parte delas disponibilizada no banco de dados do IMS. S\u00e3o fotografias, v\u00eddeos, instala\u00e7\u00f5es, livros e objetos que formam um conjunto \u00fanico da produ\u00e7\u00e3o contempor\u00e2nea mais recente. (Categoria: Iconogr\u00e1fico)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/#arte-contemporanea"}, {"nome": "Instituto Moreira Salles (biblioteca forogr\u00e1fica)", "descricao": "Biblioteca de Fotografia\n O acervo bibliogr\u00e1fico guardado no IMS Paulista \u00e9 composto por publica\u00e7\u00f5es de e sobre fotografia, contemplando tamb\u00e9m seus desdobramentos em \u00e1reas como cinema, moda, artes visuais, ci\u00eancias humanas. Al\u00e9m do cat\u00e1logo de obras gerais, selecionadas pela curadoria, h\u00e1 cole\u00e7\u00f5es especiais de nomes como Stefania Bril, Thomaz Farkas, Iat\u00e3 Cannabrava, Vania Toledo e Steidl. (Categoria: Iconogr\u00e1fico)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/#biblioteca-de-fotografia"}, {"nome": "Museu da Imigra\u00e7\u00e3o iconografia", "descricao": "Iconografias\n Banco de Imagens da Hospedaria de Imigrantes, cart\u00f5es postais, fotografias de viagens e retratos dos imigrantes (Categoria: Iconogr\u00e1fico)", "site": "http://acervodigital.museudaimigracao.org/fotografias.php"}, {"nome": "Museu da Imigra\u00e7\u00e3o maps", "descricao": "Cartografias Mapas e plantas referentes a n\u00facleos coloniais, plantas da antiga Hospedaria de Imigrantes e do Museu da Imigra\u00e7\u00e3o. (Categoria: Iconogr\u00e1fico)", "site": "http://acervodigital.museudaimigracao.org/mapas.php"}, {"nome": "Museu da Imigra\u00e7\u00e3o cartas", "descricao": "Cartas de chamada. Documentos que declaravam uma garantia de aux\u00edlio ao imigrante que pretendesse se juntar \u00e0 sua fam\u00edlia j\u00e1 instalada no Brasil. (Categoria: Iconogr\u00e1fico)", "site": "http://acervodigital.museudaimigracao.org/cartas.php"}, {"nome": "Fototeca Museu da L\u00edngua Portuguesa", "descricao": "O Museu da L\u00edngua Portuguesa \u00e9 uma iniciativa do Governo do Estado de S\u00e3o Paulo, por meio da Secretaria de Estado da Cultura, concebido e realizado em parceria com a Funda\u00e7\u00e3o Roberto Marinho. Tem como patrocinador m\u00e1ster a EDP, como patrocinadores o Grupo Globo, Grupo Ita\u00fa e Sabesp e apoio da Funda\u00e7\u00e3o Calouste Gulbenkian e do Governo Federal, por meio da Lei Federal de Incentivo \u00e0 Cultura. O IDBrasil Cultura, Educa\u00e7\u00e3o e Esporte \u00e9 a organiza\u00e7\u00e3o social respons\u00e1vel pela sua gest\u00e3o. (Categoria: Iconogr\u00e1fico)", "site": "http://fototeca.mlp.org.br"}, {"nome": "Museu Paulista (Museu do Ipiranga) Cole\u00e7\u00f5es de documentos iconogr\u00e1ficos", "descricao": "Cole\u00e7\u00f5es de documentos iconogr\u00e1ficos\n O acervo de pinturas e desenhos comp\u00f5e-se de obras a \u00f3leo, aquarela, guache, mural, pastel, carv\u00e3o e grafite nos g\u00eaneros retrato, paisagem, natureza morta, pintura hist\u00f3rica e de cunho religioso. S\u00e3o obras de pintores como Benedito Calixto, Oscar Pereira da Silva, Antonio Ferrigno, Antonio Parreiras, Pedro Am\u00e9rico, Almeida Jr. Os temas abrangem vistas da cidade de S\u00e3o Paulo, das vilas do Vale do Para\u00edba, do Oeste e litoral sul paulistas, cenas do cotidiano, tipos humanos, fazendas paulistas do s\u00e9culo 19, cenas do rio Tiet\u00ea e de minera\u00e7\u00e3o. No acervo de gravuras, predominam as litogravuras, mas contamos tamb\u00e9m com xilogravuras e \u00e1gua-fortes especialmente retratos, sobretudo de personalidades pol\u00edticas brasileiras.\n As cole\u00e7\u00f5es fotogr\u00e1ficas abrangem t\u00e9cnicas e formatos do s\u00e9culo 19 e meados do s\u00e9culo 20: daguerre\u00f3tipos, ferr\u00f3tipos, albuminas, negativos de vidro e acetato, estereoscopias al\u00e9m de fotogravuras, fototipias e fotografias em carv\u00e3o. O g\u00eanero predominante \u00e9 o retrato, principalmente nos formatos cart\u00e3o de visita e gabinete, populares no s\u00e9culo 19. O acervo conta, ainda, com expressiva cole\u00e7\u00e3o de cart\u00f5es postais referentes a cidades brasileiras, especialmente do Estado de S\u00e3o Paulo. Entre os fot\u00f3grafos, destacam-se Milit\u00e3o Augusto de Azevedo, Guilherme Gaensly, Werner Haberkorn, Theodor Preising, Val\u00e9rio Vieira.\n O acervo cartogr\u00e1fico re\u00fane plantas e mapas relativos a cidade e ao estado de S\u00e3o Paulo, importante fonte para o estudo da evolu\u00e7\u00e3o urbana. Do material impresso, destacam-se os pap\u00e9is ef\u00eameros circulados no cotidiano, tais como cartazes, folhetos ilustrados, manuais de produtos industrializados, manuais de ornamenta\u00e7\u00e3o, \u00e1lbuns de figurinhas, embalagens e r\u00f3tulos. (Categoria: Iconogr\u00e1fico)", "site": "http://museudoipiranga.org.br/nossas-colecoes/"}, {"nome": "Banco de Imagens IMAGin", "descricao": "A plataforma digital IMAGin \u00e9 fruto da parceria entre o Instituto de Conte\u00fados Audiovisuais Brasileiro (ICAB), organiza\u00e7\u00e3o sem fins lucrativos, da BRAVI \u2013 Brasil Audiovisual Independente com a Cronos Audiovisual S.A. (Categoria: Iconogr\u00e1fico)", "site": "http://imaginbrasil.com.br"}, {"nome": "Agencia fotos Estad\u00e3o", "descricao": "BANCO DE IMAGENS Fotos que marcaram a hist\u00f3ria do Brasil e do mundo nas \u00faltimas d\u00e9cadas, como esta da pra\u00e7a e igreja de Nossa Senhora de Aparecida, em Aparecida, interior de S\u00e3o Paulo no final da d\u00e9cada de 20, est\u00e3o \u00e0 disposi\u00e7\u00e3o no banco de imagens (Categoria: Iconogr\u00e1fico)", "site": "http://es.estadaoconteudo.com.br/midia/"}, {"nome": "Cinelimite", "descricao": "A Cinelimite Inc., sediada em S\u00e3o Paulo, \u00e9 uma organiza\u00e7\u00e3o sem fins lucrativos dedicada a exibir, distribuir e digitalizar o repert\u00f3rio do Cinema Brasileiro.\n Existem in\u00fameras p\u00e9rolas ao longo da hist\u00f3ria do cinema brasileiro que est\u00e3o apenas esperando para serem descobertas pelo p\u00fablico internacional \u2013 nossa miss\u00e3o \u00e9 tornar isso uma realidade. A Cinelimite fornece uma plataforma online gratuita para filmes brasileiros cl\u00e1ssicos rec\u00e9m-traduzidos, ao mesmo tempo em que fornece material complementar envolvente, como ensaios escritos e em v\u00eddeo, entrevistas, listas e eventos especiais ao vivo. (Categoria: Iconogr\u00e1fico)", "site": "http://www.cinelimite.com/"}, {"nome": "Getty Images Brasil", "descricao": "A Getty Images opera um grande site comercial que permite aos clientes pesquisar e navegar por imagens, comprar os direitos de utiliza\u00e7\u00e3o e efetuar o download das mesmas. Os custos das imagens variam de acordo com a resolu\u00e7\u00e3o escolhida e tipo de direitos associados. (Categoria: Iconogr\u00e1fico)", "site": "http://www.gettyimages.com.br"}, {"nome": "Arte Fora do Museu", "descricao": "O projeto Arte Fora do Museu nasceu em 2011 como um levantamento de 100 obras de arte nas ruas da cidade de S\u00e3o Paulo. O projeto conta com mais de 100 cidades com obras mapeadas, expandindo tamb\u00e9m sua atua\u00e7\u00e3o para al\u00e9m da web. \u00c9 um guia de arte de rua, que inclui arquitetura, escultura, graffiti e murais. (Categoria: Iconogr\u00e1fico)", "site": "http://arteforadomuseu.com.br"}], "Rio de Janeiro": [{"nome": "Arquivo Nacional (SIAN) Iconogr\u00e1fico", "descricao": "Sistema de informa\u00e7\u00f5es do Arquivo Nacional tem por objetivo a gest\u00e3o do patrim\u00f4nio documental do pa\u00eds, garantindo ao cidad\u00e3o o pleno acesso \u00e0 informa\u00e7\u00e3o. Fotos e filmes a apartir dos anos de 1951 (Categoria: Iconogr\u00e1fico)", "site": "http://sian.an.gov.br"}, {"nome": "Arquivo Nacional ( Guia de Imagens em Movimento)", "descricao": "O acervo de imagens em movimento do Arquivo Nacional possui expressivos registros da hist\u00f3ria social, cultural, pol\u00edtica e administrativa do Brasil, da d\u00e9cada de 1920 aos dias atuais. \u00c9 considerado o segundo maior acervo documental de imagens em movimento do pa\u00eds, composto por cerca de 50 mil latas de _x0001_lmes, 10 mil _x0001_tas videomagn\u00e9ticas e imagens em movimento digitais. Muitas dessas imagens s\u00e3o utilizadas em mat\u00e9rias jornal\u00edsticas, programas de TV, novas produ\u00e7\u00f5es audiovisuais e estudos acad\u00eamicos. Destacam-se os cinejornais e document\u00e1rios da Ag\u00eancia Nacional, programas da TV Tupi e da TV Educativa, registros audiovisuais do Minist\u00e9rio do Ex\u00e9rcito e do Departamento Nacional de Obras e Saneamento, pe\u00e7as publicit\u00e1rias, registros familiares e grava\u00e7\u00f5es de eventos. (Categoria: Iconogr\u00e1fico)", "site": "http://www.gov.br/arquivonacional/pt-br/servicos/copy_of_instrumentos-de-pesquisa/GuiadeFundoseColeesImagensemMovimento.pdf"}, {"nome": "Funda\u00e7\u00e3o Casa de Rui Barbosa (iconografia )", "descricao": "Funda\u00e7\u00e3o Casa de Rui Barbosa (iconografia ) (Categoria: Iconogr\u00e1fico)", "site": "http://iconografia.casaruibarbosa.gov.br/fotoweb/"}, {"nome": "Funda\u00e7\u00e3o Casa de Rui Barbosa (Rubi (acervo digital)", "descricao": "Funda\u00e7\u00e3o Casa de Rui Barbosa (Rubi (acervo digital) (Categoria: Iconogr\u00e1fico)", "site": "http://rubi.casaruibarbosa.gov.br/"}, {"nome": "BIblioteca Nacional (Acervo Digital)", "descricao": "Pesquise os peri\u00f3dicos no acervo de iconografias da BN (Categoria: Iconogr\u00e1fico)", "site": "http://bndigital.bn.gov.br/acervodigital/"}, {"nome": "Brasiliana Fotogr\u00e1fica Digital", "descricao": "Brasiliana Fotogr\u00e1fica \u00e9 um espa\u00e7o para dar visibilidade, fomentar o debate e a reflex\u00e3o sobre os acervos deste g\u00eanero documental, abordando-os enquanto fonte prim\u00e1ria mas tamb\u00e9m enquanto patrim\u00f4nio digital a ser preservado.\n Durante uma consulta aos acervos, o usu\u00e1rio pode salvar o resultado de sua pesquisa no pr\u00f3prio portal, retomando-a em outro momento. Pode, ainda, compartilh\u00e1-lo nas redes sociais.\n Esta iniciativa come\u00e7a com a uni\u00e3o de esfor\u00e7os da Funda\u00e7\u00e3o Biblioteca Nacional e do Instituto Moreira Salles. A ela poder\u00e3o vincular-se, no futuro, outras institui\u00e7\u00f5es do Brasil e do exterior, p\u00fablicas e privadas, detentoras de acervos originais de documentos fotogr\u00e1ficos referentes ao Brasil.Para tanto, as institui\u00e7\u00f5es interessadas dever\u00e3o contribuir com arquivos digitais e respectivos metadados que estejam de acordo com os padr\u00f5es adotados internacionalmente.\n Brasiliana Fotogr\u00e1fica \u00e9 um reposit\u00f3rio voltado \u00e0 preserva\u00e7\u00e3o digital, desenvolvido em DSpace \u2013 um software livre, largamente utilizado por entidades p\u00fablicas e privadas em todo o mundo. Para interoperar com outros sistemas de bibliotecas digitais, foi adotado o protocolo da Iniciativa dos Arquivos Abertos (Open Archives Initiative Protocol for Metadata Harvesting/OAI-PMH), um mecanismo para transfer\u00eancia de dados entre reposit\u00f3rios digitais. (Categoria: Iconogr\u00e1fico)", "site": "http://brasilianafotografica.bn.gov.br/brasiliana/"}, {"nome": "Brasiliana iconogr\u00e1fica Digital", "descricao": "O projeto Brasiliana Iconogr\u00e1fica prop\u00f5e-se reunir em um mesmo portal web fontes iconogr\u00e1ficas \u2013 desenhos, aquarelas, pinturas, gravuras e impressos \u2013 dispersas por cole\u00e7\u00f5es p\u00fablicas e privadas no Brasil e no exterior, tornando-as acess\u00edveis \u00e0 consulta virtual de um p\u00fablico amplo e internacional. Inicialmente, estar\u00e3o dispon\u00edveis dados t\u00e9cnicos e imagens em alta resolu\u00e7\u00e3o dos acervos de Brasiliana, pertencentes a institui\u00e7\u00f5es diretamente envolvidas na cria\u00e7\u00e3o deste portal. S\u00e3o elas: Funda\u00e7\u00e3o Biblioteca Nacional e Instituto Moreira Salles (Rio de Janeiro), Pinacoteca de S\u00e3o Paulo e Instituto Ita\u00fa Cultural (S\u00e3o Paulo). Pretende-se que este portal seja enriquecido com material proveniente de outras cole\u00e7\u00f5es de mesmo perfil. Dessa forma, Brasiliana Iconogr\u00e1fica apresenta-se como instrumento de preserva\u00e7\u00e3o digital desse patrim\u00f4nio, cuja extens\u00e3o nem os especialistas desta \u00e1rea de estudo avaliam com precis\u00e3o. (Categoria: Iconogr\u00e1fico)", "site": "http://www.brasilianaiconografica.art.br/"}, {"nome": "MAM RIO (Cole\u00e7\u00f5es)", "descricao": "Cole\u00e7\u00e3o Museu de Arte Moderna do Rio de Janeiro\n Re\u00fane o maior acervo de obras internacionais, al\u00e9m de importantes obras de artistas brasileiros. (Categoria: Iconogr\u00e1fico)", "site": "http://mam.rio/artes-visuais/colecoes/"}, {"nome": "MAM RIO (Artes Visuais)", "descricao": "ARQUIVO DE ARTES VISUAIS\n O Arquivo do Museu de Arte Moderna do Rio de Janeiro \u00e9 considerado um dos mais expressivos do pa\u00eds ao reunir e salvaguardar informa\u00e7\u00f5es sobre arte moderna e contempor\u00e2nea. Est\u00e3o dispon\u00edveis para pesquisa cerca de 118 metros lineares de documenta\u00e7\u00e3o, contendo documentos impressos, manuscritos, fotografias e cartazes sobre as exposi\u00e7\u00f5es realizadas pelo museu, artistas que fazem parte de suas cole\u00e7\u00f5es e a constru\u00e7\u00e3o de sua sede. (Categoria: Iconogr\u00e1fico)", "site": "http://mam.rio/pesquisa-documentacao/arquivo/"}, {"nome": "Cedoc da Funarte", "descricao": "O Centro de Documenta\u00e7\u00e3o e Informa\u00e7\u00e3o da Funarte se tornou fonte de refer\u00eancia para estudantes, pesquisadores e muitos profissionais da \u00e1rea art\u00edstica por guardar documenta\u00e7\u00e3o de grande relev\u00e2ncia para a preserva\u00e7\u00e3o da mem\u00f3ria da cultura brasileira. Tem um papel de destaque dentre as unidades de informa\u00e7\u00e3o em arte e cultura existentes no Rio de Janeiro e mesmo no Brasil, por ser um Centro especializado e da maior import\u00e2ncia para as pesquisas nas \u00e1reas de teatro, fotografia, dan\u00e7a, circo, m\u00fasica, \u00f3pera, artes pl\u00e1sticas e gr\u00e1ficas. O Centro preserva a mem\u00f3ria das extintas institui\u00e7\u00f5es federais da cultura, propiciando a base para estudos relacionados \u00e0s pol\u00edticas culturais estabelecidas pelo Governo Federal desde fins da d\u00e9cada de 1930. (Categoria: Iconogr\u00e1fico)", "site": "http://atom.funarte.gov.br/index.php/centro-de-documentacao-e-informacao-cedoc-da-funarte"}, {"nome": "Museu do \u00cdndio (RJ) (cole\u00e7\u00f5es Etnogr\u00e1ficas)", "descricao": "Pe\u00e7as e Objetos. O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Iconogr\u00e1fico)", "site": "http://tainacan.museudoindio.gov.br/"}, {"nome": "Museu do \u00cdndio (RJ) ( Dicion\u00e1rio Multim\u00eddias)", "descricao": "Iconografia O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Iconogr\u00e1fico)", "site": "http://japiim.museudoindio.gov.br/index.php"}, {"nome": "Museu Hist\u00f3rico Nacional (Acervo Muse\u00f3logo)", "descricao": "O acervo museol\u00f3gico do Museu Hist\u00f3rico Nacional, com cerca de 170 mil itens, \u00e9 formado por cole\u00e7\u00f5es de objetos que datam desde a Antiguidade at\u00e9 os dias atuais. Esse acervo engloba uma variada tipologia de bens culturais.\n O acervo numism\u00e1tico apresenta as cole\u00e7\u00f5es de moedas, medalhas, selos, selos sigilogr\u00e1ficos e valores impressos, al\u00e9m do meio circulante de Brasil e Portugal, totalizando mais de 150 mil itens. A qualidade do acervo faz da cole\u00e7\u00e3o de numism\u00e1tica a mais expressiva da Am\u00e9rica do Sul. O acervo numism\u00e1tico pode ser consultado, mediante agendamento, pelo telefone (21) 3299.0328 ou pelo e-mail mhn.numismatica@museus.gov.br. (Categoria: Iconogr\u00e1fico)", "site": "http://mhn.acervos.museus.gov.br/"}, {"nome": "Portal Augusto Malta", "descricao": "Acervo iconogr\u00e1fico. O projeto Portal Augusto Malta no ano em que o Arquivo Geral da Cidade do Rio de Janeiro (AGCRJ), \u00f3rg\u00e3o da Prefeitura do Rio/Secretaria Municipal das Culturas, completa 115 anos na esfera da administra\u00e7\u00e3o municipal. Torn\u00e1-lo realidade constitui um presente deste aniversariante \u00e0 cidade que lhe concede identidade. (Categoria: Iconogr\u00e1fico)", "site": "http://portalaugustomalta.rio.rj.gov.br/"}, {"nome": "Agencia fotos O Globo", "descricao": "O site do Banco de Imagens da Ag\u00eancia O Globo re\u00fane uma amostra do acervo dos jornais O Globo e Extra, com mais de 5 milh\u00f5es de fotos, entre cromos, negativos, c\u00f3pias e arquivos digitais.\n Caso voc\u00ea precise de uma imagem espec\u00edfica, basta entrar em contato com nossa equipe, que far\u00e1 uma pesquisa no acervo e com nossos parceiros em busca da melhor foto para o seu projeto.\n Com atualiza\u00e7\u00e3o di\u00e1ria, o site est\u00e1 dividido nas categorias: Editorial e Publicidade. A categoria Editorial apresenta fotos jornal\u00edsticas de personalidades e momentos importantes da Hist\u00f3ria feitas pelos jornais O Globo, Extra e Di\u00e1rio de S\u00e3o Paulo. Entre seus temas: Esportes, Meio Ambiente, M\u00fasica e TV. Com fotos mais pl\u00e1sticas, voltadas para necessidades do mercado publicit\u00e1rio, a categoria Publicidade est\u00e1 dividida pelos temas A\u00e7\u00e3o, Arquitetura, Cl\u00e1ssicas, Gastronomia, Ind\u00fastria, Paisagens e Urbanas. (Categoria: Iconogr\u00e1fico)", "site": "http://banco.agenciaoglobo.com.br/Pages/Capa/"}, {"nome": "O LUPA \u2013 Laborat\u00f3rio Universit\u00e1rio de Preserva\u00e7\u00e3o Audiovisual", "descricao": "O LUPA \u2013 Laborat\u00f3rio Universit\u00e1rio de Preserva\u00e7\u00e3o Audiovisual \u2013 \u00e9 um laborat\u00f3rio multiusu\u00e1rio vinculado ao Departamento de Cinema e V\u00eddeo da Universidade Federal Fluminense (UFF) e ao Programa de P\u00f3s-Gradua\u00e7\u00e3o em Cinema e Audiovisual (PPGCine), integrantes do Instituto de Arte e Comunica\u00e7\u00e3o Social (IACS). O LUPA \u00e9 membro do PROGEM \u2013 Programa de Gest\u00e3o de Laborat\u00f3rios e Equipamentos Multiusu\u00e1rios da Pr\u00f3-reitoria de Pesquisa, P\u00f3s-gradua\u00e7\u00e3o e Inova\u00e7\u00e3o da UFF. (Categoria: Iconogr\u00e1fico)", "site": "http://lupa.uff.br/quem-somos/"}, {"nome": "imagineRio", "descricao": "imagineRio \u00e9 um atlas pesquis\u00e1vel que ilustra a evolu\u00e7\u00e3o social e urbana do Rio de Janeiro ao longo de toda a sua hist\u00f3ria, como ela existiu e como foi imaginada. Vistas da cidade criadas por artistas, mapas por cart\u00f3grafos e plantas de locais por arquitetos ou urbanistas est\u00e3o todos localizados no tempo e no espa\u00e7o. \u00c9 um ambiente da web que oferece novas maneiras criativas para acad\u00eamicos, estudantes e moradores visualizarem o passado ao ver imagens hist\u00f3ricas e modernas em um mapa interativo que apresenta com precis\u00e3o a cidade desde sua funda\u00e7\u00e3o. Historiadores podem visualizar locais espec\u00edficos de investiga\u00e7\u00e3o, arquitetos e urbanistas podem localizar projetos de design propostos in situ , acad\u00eamicos liter\u00e1rios podem mapear romances e moradores podem reconstruir as mudan\u00e7as em seus bairros. A hist\u00f3ria urbana do Rio de Janeiro \u00e9 particularmente adequada para ser capturada dessa forma, considerando o quanto o ambiente natural, o tecido urbano e a autorrepresenta\u00e7\u00e3o da cidade mudaram ao longo do tempo. (Categoria: Iconogr\u00e1fico)", "site": "http://www.imaginerio.org/"}, {"nome": "imagineRio Fotos", "descricao": "imagineRio \u00e9 um atlas pesquis\u00e1vel que ilustra a evolu\u00e7\u00e3o social e urbana do Rio de Janeiro ao longo de toda a sua hist\u00f3ria, como ela existiu e como foi imaginada. Vistas da cidade criadas por artistas, mapas por cart\u00f3grafos e plantas de locais por arquitetos ou urbanistas est\u00e3o todos localizados no tempo e no espa\u00e7o. (Categoria: Iconogr\u00e1fico)", "site": "http://www.imaginerio.org/pt/iconography/views"}, {"nome": "imagineRio maps 1", "descricao": "imagineRio \u00e9 um atlas pesquis\u00e1vel que ilustra a evolu\u00e7\u00e3o social e urbana do Rio de Janeiro ao longo de toda a sua hist\u00f3ria, como ela existiu e como foi imaginada. Vistas da cidade criadas por artistas, mapas por cart\u00f3grafos e plantas de locais por arquitetos ou urbanistas est\u00e3o todos localizados no tempo e no espa\u00e7o. (Categoria: Iconogr\u00e1fico)", "site": "http://www.imaginerio.org/pt/iconography/maps"}, {"nome": "imagineRio maps 2", "descricao": "imagineRio \u00e9 um atlas pesquis\u00e1vel que ilustra a evolu\u00e7\u00e3o social e urbana do Rio de Janeiro ao longo de toda a sua hist\u00f3ria, como ela existiu e como foi imaginada. Vistas da cidade criadas por artistas, mapas por cart\u00f3grafos e plantas de locais por arquitetos ou urbanistas est\u00e3o todos localizados no tempo e no espa\u00e7o. (Categoria: Iconogr\u00e1fico)", "site": "http://www.imaginerio.org/pt/iconography/plans"}, {"nome": "imagineRio Fotos Aereas", "descricao": "imagineRio \u00e9 um atlas pesquis\u00e1vel que ilustra a evolu\u00e7\u00e3o social e urbana do Rio de Janeiro ao longo de toda a sua hist\u00f3ria, como ela existiu e como foi imaginada. Vistas da cidade criadas por artistas, mapas por cart\u00f3grafos e plantas de locais por arquitetos ou urbanistas est\u00e3o todos localizados no tempo e no espa\u00e7o. (Categoria: Iconogr\u00e1fico)", "site": "http://www.imaginerio.org/pt/iconography/aerials"}, {"nome": "Tyba", "descricao": "Bem-Vindo \u00e0 Tyba, um Arquivo de Imagens do Brasil (Categoria: Iconogr\u00e1fico)", "site": "http://tyba.com.br/br/home/"}, {"nome": "Projeto Helio Oiticica", "descricao": "H\u00e9lio Oiticica foi um dos artistas brasileiros mais inquietos e mais radicais, n\u00e3o resta d\u00favida. Uma mente apol\u00ednea cavalgando num corpo dionis\u00edaco. De um lado o olhar de um engenheiro e do outro a leveza de um passista. H\u00e9lio passou pelo mundo como um fura\u00e7\u00e3o e deixou um mundo muito diferente depois de si (Categoria: Iconogr\u00e1fico)", "site": "http://projetoho.com.br/pt/pesquisa-login/"}], "Minas Gerais": [{"nome": "Arquivo P\u00fablico Mineiro (Iconogr\u00e1fico)", "descricao": "O m\u00f3dulo Acervo Iconogr\u00e1fico re\u00fane desenhos, fotografias, negativos e litogravuras dos fundos e cole\u00e7\u00f5es sob a guarda do Arquivo P\u00fablico Mineiro. S\u00e3o milhares de imagens de origem p\u00fablica e privada que mostram v\u00e1rios momentos da hist\u00f3ria mineira, brasileira e internacional. O acervo resgata a mem\u00f3ria de eventos emblem\u00e1ticos com a presen\u00e7a de pessoas ilustres assim como detalhes do cotidiano de uma infinidade de an\u00f4nimos. (Categoria: Iconogr\u00e1fico)", "site": "http://www.siaapm.cultura.mg.gov.br/modules/fotografico_docs/"}], "Rio Grande do Sul": [{"nome": "Agencia fotos RBS", "descricao": "O Grupo RBS \u00e9 um conglomerado de m\u00eddia brasileiro que produz conte\u00fado jornal\u00edstico, de entretenimento e de servi\u00e7os. \u00c9 uma das maiores empresas de comunica\u00e7\u00e3o multim\u00eddia do Brasil e a maior afiliada da Rede Globo (Categoria: Iconogr\u00e1fico)", "site": "http://www.agenciarbs.com.br/"}], "Goi\u00e1s": [{"nome": "Agencia fotos Di\u00e1rios Associados", "descricao": "A D.A Press re\u00fane conte\u00fados jornal\u00edsticos em cat\u00e1logos, organizados por tema ou evento, com o intuito de facilitar sua busca.\n Podemos preparar um pacote personalizado para voc\u00ea! Qual a vantagem? Descontos progressivos ao adquiri-lo.\n Voc\u00ea pode entrar em contato conosco por meio do e-mail dapress@dabr.com.br ou pelo telefone (61) 3214-1575 / 1568. (Categoria: Iconogr\u00e1fico)", "site": "http://www.dapress.com.br/ecommerce/index.php"}, {"nome": "Instituto do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico Nacional (Iphan) fototeca", "descricao": "fototeca Instituto do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico Nacional (Iphan (Categoria: Iconogr\u00e1fico)", "site": "http://portal.iphan.gov.br/fototeca"}, {"nome": "Instituto Brasileiro de Museus - IBRAM ( plataforma google )", "descricao": "Instituto Brasileiro de Museus - IBRAM (plataforma google ) (Categoria: Iconogr\u00e1fico)", "site": "http://artsandculture.google.com/project/instituto-brasileiro-de-museus-ibram"}]};
+
+    // Função para carregar os acervos de um estado no painel da lista
+    function loadAcervos(state) {
+        var listDiv = document.getElementById("acervo-list");
+        listDiv.innerHTML = "<h4>Acervos de " + state + "</h4>";
+        if(acervos_data[state]) {
+            acervos_data[state].forEach(function(acervo) {
+                var a = document.createElement("a");
+                a.href = "#";
+                a.textContent = acervo.nome;
+                a.style.display = "block";
+                a.style.marginBottom = "5px";
+                a.onclick = function() {
+                    showAcervoDetail(acervo);
+                };
+                listDiv.appendChild(a);
+            });
+        } else {
+            listDiv.innerHTML += "<p>Nenhum acervo encontrado.</p>";
+        }
+    }
+
+    // Função para exibir os detalhes do acervo no painel de detalhes
+    function showAcervoDetail(acervo) {
+        var detailDiv = document.getElementById("acervo-detail");
+        detailDiv.innerHTML = "<h4>" + acervo.nome + "</h4>" +
+                              "<p><b>Descrição:</b> " + acervo.descricao + "</p>" +
+                              "<p><a href='" + acervo.site + "' target='_blank'>Visitar site</a></p>" +
+                              "<iframe src='" + acervo.site + "'></iframe>";  // Atualiza o iframe
+    }
+    </script>
+    
+    
+            <div class="folium-map" id="map_568822f5ecb9dda8312db0b3cd466ffe" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_568822f5ecb9dda8312db0b3cd466ffe = L.map(
+                "map_568822f5ecb9dda8312db0b3cd466ffe",
+                {
+                    center: [-15.78, -47.93],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 4,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_5b1a1e2198ff45241c660fc02a4bf124 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_5b1a1e2198ff45241c660fc02a4bf124.addTo(map_568822f5ecb9dda8312db0b3cd466ffe);
+        
+    
+            var marker_2cc4152f13e818c762fc00db432448fc = L.marker(
+                [-23.55, -46.64],
+                {
+}
+            ).addTo(map_568822f5ecb9dda8312db0b3cd466ffe);
+        
+    
+        var popup_aa78d7aa8a14c7c0b2ce59af9c451a87 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_cd465a7338ccd19beca67815e6c89070 = $(`<div id="html_cd465a7338ccd19beca67815e6c89070" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('São Paulo'); return false;">Ver acervos de São Paulo</a></div>`)[0];
+                popup_aa78d7aa8a14c7c0b2ce59af9c451a87.setContent(html_cd465a7338ccd19beca67815e6c89070);
+            
+        
+
+        marker_2cc4152f13e818c762fc00db432448fc.bindPopup(popup_aa78d7aa8a14c7c0b2ce59af9c451a87)
+        ;
+
+        
+    
+    
+            marker_2cc4152f13e818c762fc00db432448fc.bindTooltip(
+                `<div>
+                     São Paulo (21 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_176f98dd266e74956c87f5cbfeea62c1 = L.marker(
+                [-22.91, -43.2],
+                {
+}
+            ).addTo(map_568822f5ecb9dda8312db0b3cd466ffe);
+        
+    
+        var popup_c77a70fbee7d180475f4c2372c681b82 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_22c009d86f0f0dc7108d2667ceac86cd = $(`<div id="html_22c009d86f0f0dc7108d2667ceac86cd" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio de Janeiro'); return false;">Ver acervos de Rio de Janeiro</a></div>`)[0];
+                popup_c77a70fbee7d180475f4c2372c681b82.setContent(html_22c009d86f0f0dc7108d2667ceac86cd);
+            
+        
+
+        marker_176f98dd266e74956c87f5cbfeea62c1.bindPopup(popup_c77a70fbee7d180475f4c2372c681b82)
+        ;
+
+        
+    
+    
+            marker_176f98dd266e74956c87f5cbfeea62c1.bindTooltip(
+                `<div>
+                     Rio de Janeiro (23 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_756066cf086fad76b1da1fcf95453453 = L.marker(
+                [-18.1, -44.1],
+                {
+}
+            ).addTo(map_568822f5ecb9dda8312db0b3cd466ffe);
+        
+    
+        var popup_ac01c5791fb6ffef433925ef91886a1e = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_402acf2601d05c910170a84ba9239901 = $(`<div id="html_402acf2601d05c910170a84ba9239901" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Minas Gerais'); return false;">Ver acervos de Minas Gerais</a></div>`)[0];
+                popup_ac01c5791fb6ffef433925ef91886a1e.setContent(html_402acf2601d05c910170a84ba9239901);
+            
+        
+
+        marker_756066cf086fad76b1da1fcf95453453.bindPopup(popup_ac01c5791fb6ffef433925ef91886a1e)
+        ;
+
+        
+    
+    
+            marker_756066cf086fad76b1da1fcf95453453.bindTooltip(
+                `<div>
+                     Minas Gerais (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_bc823f99b397eeab797ec697c707ba94 = L.marker(
+                [-30.0, -51.22],
+                {
+}
+            ).addTo(map_568822f5ecb9dda8312db0b3cd466ffe);
+        
+    
+        var popup_f2f96d675827dfa62c72ea48e1567f54 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_bcbf05f09e28ce582321807c5877aad9 = $(`<div id="html_bcbf05f09e28ce582321807c5877aad9" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio Grande do Sul'); return false;">Ver acervos de Rio Grande do Sul</a></div>`)[0];
+                popup_f2f96d675827dfa62c72ea48e1567f54.setContent(html_bcbf05f09e28ce582321807c5877aad9);
+            
+        
+
+        marker_bc823f99b397eeab797ec697c707ba94.bindPopup(popup_f2f96d675827dfa62c72ea48e1567f54)
+        ;
+
+        
+    
+    
+            marker_bc823f99b397eeab797ec697c707ba94.bindTooltip(
+                `<div>
+                     Rio Grande do Sul (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_d3d5f22d8538e0a0c935680d9245744d = L.marker(
+                [-15.6, -49.3],
+                {
+}
+            ).addTo(map_568822f5ecb9dda8312db0b3cd466ffe);
+        
+    
+        var popup_e60e4dd980ba4e367a6b6548dc6ff121 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_5743d91c77759bc4a8c6e848fdc79775 = $(`<div id="html_5743d91c77759bc4a8c6e848fdc79775" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Goiás'); return false;">Ver acervos de Goiás</a></div>`)[0];
+                popup_e60e4dd980ba4e367a6b6548dc6ff121.setContent(html_5743d91c77759bc4a8c6e848fdc79775);
+            
+        
+
+        marker_d3d5f22d8538e0a0c935680d9245744d.bindPopup(popup_e60e4dd980ba4e367a6b6548dc6ff121)
+        ;
+
+        
+    
+    
+            marker_d3d5f22d8538e0a0c935680d9245744d.bindTooltip(
+                `<div>
+                     Goiás (3 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

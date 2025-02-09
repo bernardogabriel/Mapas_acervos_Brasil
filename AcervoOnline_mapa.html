@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_9ab8afb3fc2a473d2bab020f918d551e {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+    <style>
+      /* Estilo para os painéis */
+      #acervo-list {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          width: 350px;  /* Aumenta a largura da janela */
+          height: 400px;
+          overflow-y: auto;
+          background-color: white;
+          z-index: 1000;
+          padding: 5px;
+          border: 2px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 50%;  /* Define 50% da largura do mapa */
+          height: 80%;  /* Aumenta a altura da janela */
+          overflow-y: auto;
+          background-color: white;
+          z-index: 2000;
+          padding: 10px;
+          border: 4px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail iframe {
+          width: 100%;  /* Garante que o iframe ocupe toda a largura */
+          height: 600px;  /* Ajusta a altura do iframe para que a cabeça do site seja visível */
+          border: none;
+      }
+      .destaque {
+          font-size: 26px;
+          font-weight: bold;
+          color: #2d2d2d;
+          text-align: center;
+          margin-bottom: 20px;
+      }
+    </style>
+
+    <!-- Painel da lista de acervos -->
+    <div id="acervo-list">
+      <div class="destaque">Olá Usuário! Clique em qualquer região no mapa para carregar a lista de instituições!</div>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <!-- Painel de detalhes do acervo -->
+    <div id="acervo-detail">
+      <div class="destaque">Ao passar o mouse sobre o nome da instituição, os detalhes serão exibidos aqui! Mas atenção: alguns sites possuem proteções de segurança.</div>
+      <p><span style="font-size: 18px;">Caso o site não seja exibido, clique em VISITAR SITE.</span></p>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <script>
+    // Dados dos acervos, injetados a partir do Python
+    var acervos_data = {"S\u00e3o Paulo": [{"nome": "Acervos e Pesquisa Digitais (USP)", "descricao": "Acervos e Pesquisa Digitais \u00e9 um Projeto Tem\u00e1tico financiado pela FAPESP na chamada LinCar. Seu objetivo \u00e9 desenvolver metodologias e um repert\u00f3rio te\u00f3rico-conceitual para cole\u00e7\u00f5es de museus e documentos digitais, por meio da conceitua\u00e7\u00e3o e prototipagem de interfaces acess\u00edveis e economicamente sustent\u00e1veis. Neste site, s\u00e3o registrados os resultados da pesquisa, publica\u00e7\u00f5es da equipe e outras informa\u00e7\u00f5es do projeto, que tornam p\u00fablicos os dados das investiga\u00e7\u00f5es em andamento. (Categoria: Acervo online)", "site": "http://www.acervosdigitais.fau.usp.br/"}, {"nome": "Arquigrafia", "descricao": "O site arquigrafia.org.br \u00e9 um ambiente colaborativo na internet que, desde 2008, mantem um espa\u00e7o p\u00fablico, aberto e gratuito, para fomentar a constru\u00e7\u00e3o de uma cole\u00e7\u00e3o de imagens digitais de edif\u00edcios e espa\u00e7os urbanos do Brasil a partir da participa\u00e7\u00e3o dos seus usu\u00e1rios, aqui denominados de \u201ccomunidade Arquigrafia\u201d. (Categoria: Acervo online)", "site": "http://www.arquigrafia.org.br"}, {"nome": "Arquivo Hist\u00f3rico de SP ", "descricao": "O AHM possui cerca de 2.000 metros lineares de documentos textuais produzidos e acumulados pelo executivo p\u00fablico municipal e entes privados. Dentre a documenta\u00e7\u00e3o p\u00fablica, o Arquivo custodia os fundos C\u00e2mara Municipal de S\u00e3o Paulo, Prefeitura Municipal de S\u00e3o Paulo e Santo Amaro. A Diretoria do AHM tem como fun\u00e7\u00f5es formular e articular pol\u00edticas e projetos estrat\u00e9gicos, gerenciar rela\u00e7\u00f5es inter e intra institucionais, centralizar as requisi\u00e7\u00f5es de \u00f3rg\u00e3os externos, al\u00e9m de monitorar indicadores e promover a avalia\u00e7\u00e3o dos programas e projetos estrat\u00e9gicos.\n diretoria.ahm@prefeitura.sp.gov.br (Categoria: Acervo online)", "site": "http://capital.sp.gov.br/web/cultura/w/arquivo_historico/acervos/6952"}, {"nome": "Dicion\u00e1rio de Ruas da cidade de  SP", "descricao": "O Dicion\u00e1rio de Ruas \u00e9 uma plataforma que re\u00fane informa\u00e7\u00f5es sobre os nomes das ruas da cidade de S\u00e3o Paulo.Aqui voc\u00ea encontrar\u00e1 explica\u00e7\u00f5es, significados e justificativas dos nomes das ruas da capital. Ao tratar uma pessoa homenageada, voc\u00ea pode encontrar uma pequena biografia dessa pessoa. (Categoria: Acervo online)", "site": "http://www.dicionarioderuas.prefeitura.sp.gov.br"}, {"nome": "Arquivo Hist\u00f3rico Judaico Brasileiro", "descricao": "A cole\u00e7\u00e3o arquiv\u00edstica \u00e9 fruto do patrim\u00f4nio do antigo Arquivo Hist\u00f3rico Judaico Brasileiro, institui\u00e7\u00e3o que colecionou por 40 anos documentos importantes, publica\u00e7\u00f5es e raridades sobre a comunidade judaica no Brasil. Atualmente, este acervo \u00e9 composto por mais de 500 cole\u00e7\u00f5es e fundos documentais pessoais e institucionais, uma hemeroteca, uma cole\u00e7\u00e3o audiovisual e mais de 500 depoimentos do N\u00facleo de Hist\u00f3ria Oral; (Categoria: Acervo online)", "site": "http://museujudaicosp.org.br/acervo/"}, {"nome": "Arquivo P\u00fablico do Estado de SP", "descricao": "O Arquivo P\u00fablico do Estado de S\u00e3o Paulo possui um dos mais ricos acervos do pa\u00eds que registram a hist\u00f3ria de S\u00e3o Paulo e do Brasil desde o s\u00e9culo XVI. S\u00e3o, aproximadamente, 25 milh\u00f5es de documentos textuais, 2,7 milh\u00f5es de fotografias, mapas, plantas e ilustra\u00e7\u00f5es, 45 mil volumes de livros e mais de 6 mil t\u00edtulos de jornais e 2.300 t\u00edtulos de revistas, provenientes de diversos \u00f3rg\u00e3os e entidades do poder p\u00fablico, de arquivos pessoais de ex-governadores e outras personalidades e institui\u00e7\u00f5es particulares O Acervo do APESP n\u00e3o est\u00e1 todo digitalizado, mas disponibilizamos online uma s\u00e9rie de documentos textuais, iconogr\u00e1ficos, cartogr\u00e1ficos, alguns audiovisuais, al\u00e9m de bibliogr\u00e1ficos e hemerogr\u00e1ficos.Consulte abaixo os conjuntos, total ou parcialmente, digitalizados e dispon\u00edveis neste site. Para cada conjunto \u00e9 indicado seu respectivo fundo ou cole\u00e7\u00e3o. Recomendamos que seja lida a descri\u00e7\u00e3o completa dos fundos no Guia do Acervo do Arquivo P\u00fablico do Estado para que voc\u00ea compreenda melhor o contexto de produ\u00e7\u00e3o dos documentos digitalizados. (Categoria: Acervo online)", "site": "http://www.arquivoestado.sp.gov.br/web/acervo/conheca"}, {"nome": "Centro de Documenta\u00e7\u00e3o e Mem\u00f3ria da UNESP (CEDEM)", "descricao": "O Projeto Mem\u00f3ria da Universidade refere-se fundamentalmente ao estudo da hist\u00f3ria da Unesp com a finalidade de garantir o registro de sua mem\u00f3ria. Seu objetivo consiste em promover um trabalho de coleta e gera\u00e7\u00e3o de fontes informativas daquela hist\u00f3ria, sua sistematiza\u00e7\u00e3o com a finalidade de preserv\u00e1-las e difundi-las, garantindo assim o acesso democr\u00e1tico \u00e0 informa\u00e7\u00e3o a respeito da Universidade. (Categoria: Acervo online)", "site": "http://www.cedem.unesp.br"}, {"nome": "Cinemateca Brasileira", "descricao": "56.000 itens catalogados pela Cinemateca Brasileira. O maior acervo online da cinematografia brasileira. (Categoria: Acervo online)", "site": "http://cinemateca.org.br/acervo/"}, {"nome": "Cinemateca Brasileira (Centro de Documenta\u00e7\u00e3o e Pesquisa)", "descricao": "Cole\u00e7\u00e3o VHS, DVD e Blu-ray do Centro de Documenta\u00e7\u00e3o e Pesquisa\n Desenvolvida para atender as demandas sobre a cole\u00e7\u00e3o audiovisual sob a guarda do setor, a VDB cont\u00e9m registros com informa\u00e7\u00f5es dos materiais existentes em formatos pass\u00edveis de visionamento nas esta\u00e7\u00f5es da Biblioteca do Centro de Documenta\u00e7\u00e3o e Pesquisa Paulo Em\u00edlio Sales Gomes (VHS, DVD e Blu-Ray). (Categoria: Acervo online)", "site": "http://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/?IsisScript=iah/iah.xis&base=VDB&lang=p"}, {"nome": "Cinemateca Brasileira (Base de Dados)", "descricao": "O Guia de Arquivos e Cole\u00e7\u00f5es re\u00fane informa\u00e7\u00f5es sum\u00e1rias sobre conjuntos de documentos produzidos, acumulados ou colecionados por pessoas ou entidades ligadas ao cinema brasileiro ao longo de suas trajet\u00f3rias. (Categoria: Acervo online)", "site": "http://cinemateca.org.br/acervo/base-de-dados/"}, {"nome": "Instituto de Estudos Brasileiros (IEB - USP)", "descricao": "Criado por S\u00e9rgio Buarque de Holanda, em 1962, o Instituto de Estudos Brasileiros \u00e9 um centro multidisciplinar de pesquisas e documenta\u00e7\u00e3o sobre a hist\u00f3ria e as culturas do Brasil. Tem como desafio fundador a reflex\u00e3o sobre a sociedade brasileira, envolvendo a articula\u00e7\u00e3o de diferentes \u00e1reas das humanidades. (Categoria: Acervo online)", "site": "http://www.ieb.usp.br"}, {"nome": "Instituto de Estudos Brasileiros (IEB - USP) Arquivo", "descricao": "O Arquivo do IEB USP surgiu em 1968, integrado \u00e0 Biblioteca. A partir de 1974, com a chegada de sucessivos arquivos pessoais, o crescimento do acervo motivou seu estabelecimento como setor independente.\n \n Com o objetivo de receber, organizar, preservar e divulgar seus documentos, visando oferecer fontes prim\u00e1rias para pesquisas das mais diversas \u00e1reas, o Arquivo do IEB atualmente re\u00fane cerca de 500 mil documentos, divididos em mais de 150 conjuntos. Dentre eles os arquivos pessoais de: Anita Malfatti, Aracy Abreu Amaral, Caio Prado Jr., Celso Furtado, Camargo Guarnieri, Graciliano Ramos, Jo\u00e3o Guimar\u00e3es Rosa, M\u00e1rio de Andrade, Milton Santos, Manuel Correia de Andrade, Paul Singer entre muitos outros. (Categoria: Acervo online)", "site": "http://www.ieb.usp.br/sobre-arquivo-ieb/"}, {"nome": "Instituto Moreira Salles", "descricao": "A pesquisa nos acervos do Instituto Moreira Salles \u00e9 aberta ao p\u00fablico em geral e a profissionais interessados. Ela tem in\u00edcio nas bases de dados do IMS, dispon\u00edveis em parte na internet: s\u00e3o cerca de 40 mil fotografias, 1.800 imagens de iconografia, descri\u00e7\u00e3o de 50 mil itens do acervo de Literatura, dos quais 9 mil digitalizados, al\u00e9m de 30 mil obras da biblioteca e 10 mil fonogramas.\n Fotografia\n Iconografia\n Literatura\n M\u00fasica\n Arte Contempor\u00e2nea\n Biblioteca de Fotografia (Categoria: Acervo online)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/"}, {"nome": "MAM - Museu de Arte Moderna de S\u00e3o Paulo", "descricao": "O Museu de Arte Moderna de S\u00e3o Paulo \u00e9 uma sociedade civil de interesse p\u00fablico, sem fins lucrativos, fundada em 1948. Seu acervo possui mais de 5 mil obras produzidas pelos nomes mais representativos da arte moderna e contempor\u00e2nea, principalmente brasileira. Tanto a cole\u00e7\u00e3o como as exposi\u00e7\u00f5es privilegiam o experimentalismo, abrindo-se para a pluralidade da produ\u00e7\u00e3o art\u00edstica mundial e a diversidade de interesses das sociedades contempor\u00e2neas. (Categoria: Acervo online)", "site": "http://mam.org.br/acervo/"}, {"nome": "Museu Casa de Portinari (Brodowski - SP)", "descricao": "O acervo do Projeto Portinari tem relev\u00e2ncia no campo da cultura e da arte brasileira. Fruto de uma metodologia pioneira e meticulosa, este acervo foi composto, inicialmente, pelos materiais guardados e preservados pela vi\u00fava do pintor, Maria Portinari. (Categoria: Acervo online)", "site": "http://www.portinari.org.br"}, {"nome": "Museu da Casa Brasileira (SP)", "descricao": "Museu da Casa Brasileira (SP) (Categoria: Acervo online)", "site": "http://mcb.org.br/pt/pt/"}, {"nome": "Museu da Imagem e do Som - MIS SP", "descricao": "O acervo MIS conta com mais de 200 mil itens: fotografias, filmes, v\u00eddeos, cartazes, pe\u00e7as gr\u00e1ficas, equipamentos de imagem e som e registros sonoros, al\u00e9m dos livros, cat\u00e1logos, peri\u00f3dicos, CDs e DVDs do acervo bibliogr\u00e1fico e dos diversos documentos do acervo arquiv\u00edstico. (Categoria: Acervo online)", "site": "http://mis-sp.org.br/acervo/"}, {"nome": "Museu da Imagem e do Som - MIS SP ( acervo on line)", "descricao": "Por meio do Acervo Online voc\u00ea encontrar\u00e1 informa\u00e7\u00f5es sobre os itens que comp\u00f5em os acervos museol\u00f3gico e bibliogr\u00e1fico do MIS, e sobre os documentos do arquivo institucional. Em diversos casos, \u00e9 poss\u00edvel ter amplo acesso ao conte\u00fado das cole\u00e7\u00f5es de fotografia, \u00e1udio e v\u00eddeo. (Categoria: Acervo online)", "site": "http://mis-sp.org.br/acervo-online/"}, {"nome": "Museu da Imigra\u00e7\u00e3o Acervo Digital", "descricao": "O Museu da Imigra\u00e7\u00e3o est\u00e1 localizado no complexo hist\u00f3rico da antiga Hospedaria de Imigrantes do Br\u00e1s. (Categoria: Acervo online)", "site": "http://acervodigital.museudaimigracao.org/"}, {"nome": "Museu da Imigra\u00e7\u00e3o Documentos", "descricao": "Requerimentos SACOP Documentos que solicitam restitui\u00e7\u00e3o das despesas de transporte dos imigrantes at\u00e9 a chegada ao Brasil. (Categoria: Acervo online)", "site": "http://acervodigital.museudaimigracao.org/requerimentos.php"}, {"nome": "Museu da Imigra\u00e7\u00e3o livro de registro", "descricao": "Registros de matr\u00edcula Dados do livro de registro das pessoas que passaram pela Hospedaria de Imigrantes (Categoria: Acervo online)", "site": "http://acervodigital.museudaimigracao.org/livros.php"}, {"nome": "Museu da Imigra\u00e7\u00e3o livro de bordo", "descricao": "Listas de bordo Dados do livro de desembarque de passageiros. (Categoria: Acervo online)", "site": "http://acervodigital.museudaimigracao.org/passageiros.php"}, {"nome": "Museu Paulista (Museu do Ipiranga) Acervo online. Acervo Digital.", "descricao": "Acervo online. Acervo Digital. O acervo digital do Museu Paulista re\u00fane tr\u00eas tipologias documentais: documentos iconogr\u00e1ficos, textuais e tridimensionais.\n Navegue por esses recortes e explore sua riqueza e diversidade. Seu acervo possui cerca de 30.000 itens de iconografia, que incluem pinturas, fotografias e cartazes, al\u00e9m de 25.000 objetos. (Categoria: Acervo online)", "site": "http://museudoipiranga.org.br/acervo-online/"}, {"nome": "Vitruvius", "descricao": "Vitruvius . O portal \u00e9 uma plataforma digital comprometida com a difus\u00e3o do conhecimento arquitet\u00f4nico, art\u00edstico e cultural. Mantido pela Romano Guerra Editora desde 2000, disponibiliza um guia de livros, um jornal e sete revistas especializadas, incluindo Arquitextos, revista com classifica\u00e7\u00e3o Qualis Capes A2 e conselho editorial com renomados intelectuais brasileiros e estrangeiros. (Categoria: Acervo online)", "site": "http://vitruvius.com.br/revistas"}, {"nome": "Associa\u00e7\u00e3o Brasileira de M\u00fasica e Artes (Abramus)", "descricao": "A Associa\u00e7\u00e3o Brasileira de M\u00fasica e Artes (Abramus) \u00e9 uma associa\u00e7\u00e3o de gest\u00e3o coletiva de Direitos Autorais sem fins lucrativos, fundada em 1982, para defender os direitos autorais dos artistas das classes Musical, Dramaturgia e das Artes Visuais.\n A Abramus tem mais de 100 mil titulares, sendo a maior associa\u00e7\u00e3o de direitos autorais do Brasil, al\u00e9m de ser a \u00fanica das associa\u00e7\u00f5es vinculadas ao Ecad que trabalha com os segmentos de Artes C\u00eanicas (teatro e dan\u00e7a) e Artes Visuais (atrav\u00e9s da Autvis). (Categoria: Acervo online)", "site": "http://auth.abramus.org.br/realms/Abramus/protocol/openid-connect/auth?response_type=code&client_id=portal&redirect_uri=http%3A%2F%2Fportal.abramus.org.br%3A80%2Fportal%2Fv%2Fprincipal.faces?faces-redirect%3Dtrue&state=72f23518-8f7e-4bb7-9907-0a85dc7d7f25&login=true&scope=openid"}, {"nome": "AUTIVS", "descricao": "A AUTVIS - Associa\u00e7\u00e3o Brasileira dos Direitos de Autores Visuais \u00e9 uma associa\u00e7\u00e3o sem fins lucrativos que faz a gest\u00e3o coletiva dos direitos autorais de artistas pl\u00e1sticos, fot\u00f3grafos, escultores, ilustradores, designers, grafiteiros, etc.\n Atualmente a AUTVIS representa mais de 50 mil artistas nacionais e internacionais como: NIEMEYER, KOBRA, VIK MUNIZ, IRM\u00c3OS CAMPANA, ALE JORDA\u0303O, LEDA CATUNDA, ANTONIO HENRIQUE AMARAL, ALEMA\u0303OART, CICERO DIAS, JUDITH LAUAND, DI CAVALCANTI, 6EMEIA, GUTO LACAZ, MIRO\u0301, MATISSE, CALATRAVA, MAGRITTE, PICASSO, LE CORBUSIER, WARHOL entre outros grandes nomes. (Categoria: Acervo online)", "site": "https://www.autvis.org.br/licenciamento/login"}, {"nome": "Uni\u00e3o Brasileira de Compositores - UBC", "descricao": "Uni\u00e3o Brasileira de Compositores - UBC \u00e9 uma associa\u00e7\u00e3o sem fins lucrativos, dirigida por autores, que tem como objetivo principal a defesa e a promo\u00e7\u00e3o dos interesses dos titulares de direitos autorais de m\u00fasicas e a distribui\u00e7\u00e3o dos rendimentos gerados pela utiliza\u00e7\u00e3o das mesmas, bem como o desenvolvimento cultural. (Categoria: Acervo online)", "site": "http://www.ubc.org.br/consulta"}, {"nome": "Enciclop\u00e9dia Ita\u00fa Cultural", "descricao": "A Enciclop\u00e9dia Ita\u00fa Cultural de Arte e Cultura Brasileira \u00e9 uma obra de refer\u00eancia virtual que re\u00fane informa\u00e7\u00f5es sobre artes visuais, literatura, teatro, cinema, dan\u00e7a e m\u00fasica produzidos no Brasil. Um trabalho que est\u00e1 em cont\u00ednua amplia\u00e7\u00e3o e atualiza\u00e7\u00e3o. (Categoria: Acervo online)", "site": "http://enciclopedia.itaucultural.org.br/"}, {"nome": "Museu da Cidade de S\u00e3o Paulo", "descricao": "Museu da Cidade de S\u00e3o Paulo promover a reflex\u00e3o cont\u00ednua das din\u00e2micas de constru\u00e7\u00e3o da cidade f\u00edsica e simb\u00f3lica, retratar sua diversidade cultural e registrar a mem\u00f3ria de sua popula\u00e7\u00e3o. Nessa perspectiva, al\u00e9m da pr\u00f3pria cidade ser compreendida como seu principal acervo operacional, o Museu possui ainda sete tipologias de acervos, que devem servir de base para estudos, produ\u00e7\u00e3o de conhecimento e difus\u00e3o sobre a cidade de S\u00e3o Paulo, seus habitantes e as intera\u00e7\u00f5es destes com o territ\u00f3rio. S\u00e3o eles:\n ARQUITET\u00d4NICO, BENS M\u00d3VEIS HIST\u00d3RICOS, FOTOGR\u00c1FICO, HIST\u00d3RIA ORAL, DOCUMENTAL, BIBLIOGR\u00c1FICO (Categoria: Acervo online)", "site": "http://www.museudacidade.prefeitura.sp.gov.br/acervos/"}], "Rio de Janeiro": [{"nome": "Arquivo Geral da Cidade do RJ", "descricao": "Os Arquivos s\u00e3o constitu\u00eddos como condi\u00e7\u00e3o primeira de registros das a\u00e7\u00f5es administrativas do Estado ou do Poder P\u00fablico. Assim, lhes servem de elementos de prova e informa\u00e7\u00e3o na comprova\u00e7\u00e3o de direitos. Cumprindo sua miss\u00e3o institucional ou legal. Proveni\u00eancia da Documenta\u00e7\u00e3o\n Esp\u00e9cies Documentais,Per\u00edodo Colonial, Per\u00edodo Imperial, Per\u00edodo Republicano (Categoria: Acervo online)", "site": "http://www.rio.rj.gov.br/arquivo"}, {"nome": "Arquivo Nacional (SIAN) online", "descricao": "Sistema de informa\u00e7\u00f5es do Arquivo Nacional tem por objetivo a gest\u00e3o do patrim\u00f4nio documental do pa\u00eds, garantindo ao cidad\u00e3o o pleno acesso \u00e0 informa\u00e7\u00e3o. Fotos e filmes a apartir dos anos de 1950 (Categoria: Acervo online)", "site": "http://sian.an.gov.br"}, {"nome": "Arquivo P\u00fablico Do Estado Do Rio De Janeiro", "descricao": "A base de dados APERJ cont\u00e9m informa\u00e7\u00f5es sobre os documentos que integram o acervo arquiv\u00edstico da institui\u00e7\u00e3o. Constitu\u00edda a partir de uma estrutura\u00e7\u00e3o multin\u00edvel, ou seja, do geral para o particular, permite a pesquisa em fundos e cole\u00e7\u00f5es sob cust\u00f3dia do APERJ articulando diferentes n\u00edveis de descri\u00e7\u00e3o.\n O sistema utilizado \u00e9 o AtoM (vers\u00e3o 2.2.1), um aplicativo de descri\u00e7\u00e3o arquiv\u00edstica para a web desenvolvido em conformidade com os padr\u00f5es de normatiza\u00e7\u00e3o do Conselho Internacional de Arquivos (ICA). (Categoria: Acervo online)", "site": "http://www.base.aperj.rj.gov.br/"}, {"nome": "Funda\u00e7\u00e3o Casa de Rui Barbosa (SophiA (acervo f\u00edsico )", "descricao": "Funda\u00e7\u00e3o Casa de Rui Barbosa (SophiA (acervo f\u00edsico ) (Categoria: Acervo online)", "site": "http://acervos.casaruibarbosa.gov.br/"}, {"nome": "MAM RIO (documenta\u00e7\u00e3o)", "descricao": "Devido \u00e0 necessidade de movimenta\u00e7\u00e3o e reorganiza\u00e7\u00e3o interna do acervo documental e bibliogr\u00e1fico, o agendamento de pesquisas est\u00e1 temporariamente suspenso.\n Pesquisas sobre cinema, consulte a Cinemateca do MAM ou escreva para o e-mail cinemateca@mam.rio.\n O MAM Rio possui um dos mais importantes e abrangentes acervos documentais e bibliogr\u00e1ficos especializados em arte moderna e contempor\u00e2nea do pa\u00eds. Al\u00e9m de salvaguardar a mem\u00f3ria da institui\u00e7\u00e3o, o setor atende demandas internas e externas de pesquisa e produz conte\u00fado sobre a hist\u00f3ria do museu e as cole\u00e7\u00f5es de arte que abriga. (Categoria: Acervo online)", "site": "http://mam.rio/pesquisa-documentacao/"}, {"nome": "CPDOC - Funda\u00e7\u00e3o Get\u00falio Vargas (FGV) Acervo", "descricao": "O acervo do CPDOC \u00e9 constitu\u00eddo por documentos manuscritos, impressos e audiovisuais, al\u00e9m de depoimentos de hist\u00f3ria oral e verbetes tem\u00e1ticos e biogr\u00e1ficos. Grande parte est\u00e1 dispon\u00edvel gratuitamente para consulta presencial ou virtual. \n A sala de consulta, localizada na Casa Acervo, \u00e9 o local onde os pesquisadores podem consultar, gratuitamente, os documentos que j\u00e1 se encontram organizados, contando com a orienta\u00e7\u00e3o de profissionais especializados. (Categoria: Acervo online)", "site": "https://www18.fgv.br/cpdoc/acervo/arquivo"}, {"nome": "CTAv Centro T\u00e9cnico Audiovisual", "descricao": "O CTAv nasceu a partir de uma parceria entre a Embrafilme e o National Film Board (NFB), do Canad\u00e1. Um acordo de coopera\u00e7\u00e3o t\u00e9cnica, assinado em 1985, possibilitou a cria\u00e7\u00e3o do Centro T\u00e9cnico Audiovisual, que na \u00e9poca era vinculado \u00e0 Diretoria de Opera\u00e7\u00f5es N\u00e3o-Comerciais da Embrafilme (DONAC). (Categoria: Acervo online)", "site": "http://www.ctav.gov.br"}, {"nome": "Cedoc da Funarte", "descricao": "O Centro de Documenta\u00e7\u00e3o e Informa\u00e7\u00e3o da Funarte se tornou fonte de refer\u00eancia para estudantes, pesquisadores e muitos profissionais da \u00e1rea art\u00edstica por guardar documenta\u00e7\u00e3o de grande relev\u00e2ncia para a preserva\u00e7\u00e3o da mem\u00f3ria da cultura brasileira. Tem um papel de destaque dentre as unidades de informa\u00e7\u00e3o em arte e cultura existentes no Rio de Janeiro e mesmo no Brasil, por ser um Centro especializado e da maior import\u00e2ncia para as pesquisas nas \u00e1reas de teatro, fotografia, dan\u00e7a, circo, m\u00fasica, \u00f3pera, artes pl\u00e1sticas e gr\u00e1ficas. O Centro preserva a mem\u00f3ria das extintas institui\u00e7\u00f5es federais da cultura, propiciando a base para estudos relacionados \u00e0s pol\u00edticas culturais estabelecidas pelo Governo Federal desde fins da d\u00e9cada de 1930. (Categoria: Acervo online)", "site": "http://atom.funarte.gov.br/index.php/centro-de-documentacao-e-informacao-cedoc-da-funarte"}, {"nome": "Instituto Hist\u00f3rico e Geogr\u00e1fico Brasileiro (IHGB)", "descricao": "Instituto Hist\u00f3rico e Geogr\u00e1fico Brasileiro (IHGB) www.ihgb.org.br/pesquise/ (Categoria: Acervo online)", "site": "http://www.ihgb.org.br"}, {"nome": "Instituto Hist\u00f3rico e Geogr\u00e1fico Brasileiro (IHGB) Arquivo", "descricao": "O Arquivo do IHGB re\u00fane documentos escritos avulsos variados, arquivos pessoais e privados, al\u00e9m de uma rica cole\u00e7\u00e3o de cartografia e iconografia da hist\u00f3ria do Brasil. No conjunto, destacam-se cinco arquivos presidenciais (Manuel Deodoro da Fonseca, Prudente de Morais, Epit\u00e1cio Pessoa, Rodrigues Alves e Em\u00edlio Garrastazu M\u00e9dici) e v\u00e1rios arquivos de personalidades da pol\u00edtica nacional, de escritores e intelectuais. Al\u00e9m disso, encontram-se documentos significativos, como atlas e mapas aquarelados do s\u00e9culo XVII e a partitura aut\u00f3grafa original do hino da Independ\u00eancia, de autoria do imperador Pedro I, assim como os di\u00e1rios de Andr\u00e9 Rebou\u00e7as e os cadernos de campo de Euclides da Cunha. Vale mencionar ainda o conjunto de documentos reunidos relacionados \u00e0 hist\u00f3ria das col\u00f4nias portuguesas na \u00c1frica, \u00c1sia e Oceania e suas rela\u00e7\u00f5es com o Brasil e o tr\u00e1fico transatl\u00e2ntico de escravizados. Atualmente, a cole\u00e7\u00e3o fotogr\u00e1fica do IHGB vem sendo tratada e digitalizada pelo portal da Brasiliana Fotogr\u00e1fica.\n Em 2015, o IHGB foi distinguido com o registro internacional do Programa Mem\u00f3ria do Mundo da Unesco, com o conjunto de documentos intitulado \u201cA Guerra da Tr\u00edplice Alian\u00e7a: representa\u00e7\u00f5es cartogr\u00e1ficas e iconogr\u00e1ficas\u201d. (Categoria: Acervo online)", "site": "http://www.ihgb.org.br/colecoes-arquivo/"}, {"nome": "Museu da Imagem e do Som do Rio de Janeiro ( pesquisa on line)", "descricao": "Endere\u00e7o: https://bd.mis.rj.gov.br . Anotar previamente os C\u00f3digos e IPs para acesso ao conte\u00fado presencial. O agendamento deve ser feito por e-mail, para o endere\u00e7o saladepesquisa@mis.rj.gov.br, com o tema e sele\u00e7\u00e3o de itens com base no c\u00f3digo anterior e IPs. Em breve estaremos disponibilizando agendamento online tamb\u00e9m. (Categoria: Acervo online)", "site": "http://mis.rj.gov.br/v1/index.php/pesquisa-online/"}, {"nome": "Museu do \u00cdndio (RJ) (Arquivo Virtual)", "descricao": "Documentos .O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Acervo online)", "site": "http://www.docvirt.com/docreader.net/DocReader.aspx?bib=mi_arquivistico&pagfis=201421"}, {"nome": "Museu do \u00cdndio (RJ) ( Refer\u00eancia Documentais)", "descricao": "Bibliogr\u00e1fico. O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Acervo online)", "site": "http://base2.museudoindio.gov.br/cgi-bin/wxis.exe?IsisScript=phl82.xis&cipar=phl82.cip&lang=por"}, {"nome": "Museu Hist\u00f3rico Nacional", "descricao": "Acervo Arquiv\u00edstico: Hist\u00f3rico\n O Arquivo Hist\u00f3rico do Museu Hist\u00f3rico Nacional \u00e9 formado por cole\u00e7\u00f5es, a maioria de car\u00e1ter privado, que abrigam mais de 62 mil documentos iconogr\u00e1ficos e manuscritos sobre a hist\u00f3ria do Brasil.\n As consultas ao acervo, mediante agendamento, podem ser feitas pelo telefone (21) 3299.0368 ou pelo e-mail mhn.arquivo.historico@museus.gov.br. Consulte on-line as informa\u00e7\u00f5es das cole\u00e7\u00f5es na base de dados Atom. Confira tutorial para pesquisa. (Categoria: Acervo online)", "site": "http://mhn.acervos.museus.gov.br/abertura-dos-acervos/"}, {"nome": "Museu Hist\u00f3rico Nacional (Arquivo Hist\u00f3rico)", "descricao": "O Arquivo Hist\u00f3rico do Museu Hist\u00f3rico Nacional \u00e9 formado por cole\u00e7\u00f5es, a maioria de car\u00e1ter privado, que abrigam mais de 62 mil documentos iconogr\u00e1ficos e manuscritos sobre a hist\u00f3ria do Brasil. (Categoria: Acervo online)", "site": "http://atom-mhn.museus.gov.br/index.php/"}, {"nome": "Museu Nacional/UFRJ", "descricao": "A forma\u00e7\u00e3o do acervo do Museu deu-se primeiramente pela transfer\u00eancia para sua sede, de instrumentos, m\u00e1quinas e gabinetes dispersos em outras institui\u00e7\u00f5es, pela doa\u00e7\u00e3o de objetos de arte e da Antiguidade pela fam\u00edlia real, pelas cole\u00e7\u00f5es existentes na Casa dos P\u00e1ssaros, pela cole\u00e7\u00e3o de mineralogia, conhecida como Cole\u00e7\u00e3o Werner, e por pe\u00e7as etnogr\u00e1ficas provenientes das prov\u00edncias do Brasil. Hoje, com um acervo cultural e cient\u00edfico relevante \u00e9 considerado o maior museu de hist\u00f3ria natural da Am\u00e9rica Latina. (Categoria: Acervo online)", "site": "http://www.museunacional.ufrj.br/dir/acervo.html"}, {"nome": "Instituto do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico Nacional (Iphan) Rede de arquivos", "descricao": "A Rede de Arquivos Iphan \u00e9 um reposit\u00f3rio de documentos digitalizados que integra os conte\u00fados produzidos pelo Iphan, acumulados em 80 anos de pol\u00edtica de preserva\u00e7\u00e3o do patrim\u00f4nio cultural, atualmente distribu\u00eddos nas 60 unidades da institui\u00e7\u00e3o, em 54 cidades. Entre os documentos est\u00e3o invent\u00e1rios, imagens, plantas, dossi\u00eas, relat\u00f3rios de obras e processos de tombamento, al\u00e9m de rica documenta\u00e7\u00e3o iconogr\u00e1fica e cartogr\u00e1fica. O sistema permite buscas a partir do nome do bem, localidade, tipo de documento - entre outros par\u00e2metros -, sem comprometer a integridade da documenta\u00e7\u00e3o ou desmembrar os acervos f\u00edsicos. (Categoria: Acervo online)", "site": "http://portal.iphan.gov.br/pagina/detalhes/1223"}, {"nome": "Brasiliana Museus", "descricao": "A Brasiliana Museus \u00e9 uma plataforma online que busca conectar e disponibilizar o patrim\u00f4nio dos museus brasileiros em um reposit\u00f3rio acess\u00edvel ao p\u00fablico, ampliando o alcance dos acervos para al\u00e9m das fronteiras f\u00edsicas dos museus (Categoria: Acervo online)", "site": "http://brasiliana.museus.gov.br"}], "Rio Grande do Sul": [{"nome": "Arquivo Hist\u00f3rico do Rio Grande do Sul (AHRS)", "descricao": "O Arquivo Hist\u00f3rico do Rio Grande do Sul (AHRS), criado pela Lei 2.345, de 29 de janeiro de 1954, \u00e9 uma institui\u00e7\u00e3o da Secretaria de Estado da Cultura (Sedac). Sua fun\u00e7\u00e3o primordial \u00e9 a guarda e a conserva\u00e7\u00e3o da documenta\u00e7\u00e3o hist\u00f3rica de origem p\u00fablica, sobretudo do Poder Executivo, e privada. (Categoria: Acervo online)", "site": "http://cultura.rs.gov.br/acervo-ahrs"}], "Santa Catarina": [{"nome": "Arquivo P\u00fablico do Estado de Santa Catarina (APESC)", "descricao": "Bem-vindos ao Sistema de Consulta ao Acervo do Arquivo P\u00fablico do Estado de Santa Catarina (APESC)!\n \n A iniciativa \u00e9 parte de um projeto financiado pelo Fundo para Reconstitui\u00e7\u00e3o de Bens Lesados (FRBL) do Minist\u00e9rio P\u00fablico do Estado de Santa Catarina (MP-SC), com o objetivo de digitalizar e disponibilizar parte do acervo do APESC.\n \n O Sistema de Consulta ao Acervo opera no software livre ATOM (Access to Memory), desenvolvido com o suporte do Conselho Internacional de Arquivos (ICA) de acordo com padr\u00f5es internacionais de descri\u00e7\u00e3o arquiv\u00edstica. (Categoria: Acervo online)", "site": "http://acervo.arquivopublico.sc.gov.br"}], "Goi\u00e1s": [{"nome": "Arquivo P\u00fablico do Distrito Federal (plataforma Atom)", "descricao": "Desde de 2013 o Arquivo P\u00fablico do DF vem pesquisando e estudando as possibilidades para implanta\u00e7\u00e3o de um sistema de acesso ao acervo arquiv\u00edstico por meio da Internet.Adotamos essa ferramenta por ser um projeto do Conselho Internacional de Arquivos, apoiado pela UNESCO, que tem por objetivo proporcionar um software livre que permita as institui\u00e7\u00f5es difundir os fundos arquiv\u00edsticos na Internet. O AtoM pode ser formatado, adaptado, com altera\u00e7\u00e3o de layout e o mais importante, segue a Norma Internacional de Descri\u00e7\u00e3o Arquiv\u00edstica ISAD(G).Integrado ao AtoM, o Arquivo P\u00fablico implantou tamb\u00e9m o Archivematica, um aplicativo de c\u00f3digo aberto baseado na Web, seguindo padr\u00f5es que possibilitam \u00e0 institui\u00e7\u00e3o processar objetos digitais em conformidade com as normas de preserva\u00e7\u00e3o digital de longo prazo com conte\u00fado digital confi\u00e1vel e aut\u00eantico. Em suma, estamos falando de um reposit\u00f3rio digital que j\u00e1 est\u00e1 instalado na SUTIC/SEPLAG. (Categoria: Acervo online)", "site": "http://www.atom.arquivopublico.df.gov.br/"}, {"nome": "Instituto Brasileiro de Museus (IBRAM)", "descricao": "Instituto Brasileiro de Museus (IBRAM) (Categoria: Acervo online)", "site": "http://www.museus.gov.br"}, {"nome": "Museu de Arte da Universidade Federal de Goi\u00e1s (UFG)", "descricao": "Em 2019, o Conselho Diretor do Museu Antropol\u00f3gico aprovou a cria\u00e7\u00e3o deste acervo virtual com o objetivo de ampliar a divulga\u00e7\u00e3o do nosso trabalho. Esperamos compartilhar um resultado eficiente que contribua para a salvaguarda, divulga\u00e7\u00e3o e pesquisa do Patrim\u00f4nio Cultural Brasileiro e para a valoriza\u00e7\u00e3o da diversidade de nossos povos. (Categoria: Acervo online)", "site": "http://acervo.museu.ufg.br"}, {"nome": "Dominio P\u00fablico Brasil", "descricao": "O \"Portal Dom\u00ednio P\u00fablico\", lan\u00e7ado em novembro de 2004 (com um acervo inicial de 500 obras), prop\u00f5e o compartilhamento de conhecimentos de forma equ\u00e2nime, colocando \u00e0 disposi\u00e7\u00e3o de todos os usu\u00e1rios da rede mundial de computadores - Internet - uma biblioteca virtual que dever\u00e1 se constituir em refer\u00eancia para professores, alunos, pesquisadores e para a popula\u00e7\u00e3o em geral. (Categoria: Acervo online)", "site": "http://www.dominiopublico.gov.br"}, {"nome": "Instituto do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico Nacional (Iphan)", "descricao": "Instituto do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico Nacional (Iphan) portal (Categoria: Acervo online)", "site": "http://portal.iphan.gov.br"}, {"nome": "WikiArt", "descricao": "Enciclopedia de artes visuais. N\u00e3o \u00e9 Brasileiro (Categoria: Acervo online)", "site": "http://www.wikiart.org/pt"}], "Mato Grosso": [{"nome": "Arquivo P\u00fablico do Estado de Mato Grosso (APMT)", "descricao": "A Institui\u00e7\u00e3o Arquivo P\u00fablico data do ano de 1896, durante o Governo de Ant\u00f4nio Correa da Costa, o qual, por sua vez, delegou a sua organiza\u00e7\u00e3o a Estev\u00e3o de Mendon\u00e7a. Este, diante do grande volume de documentos setecentista e oitocentistas providenciou a confec\u00e7\u00e3o, por um latoeiro da Capital, de latas de folhas de flandres, nelas depositando os documentos classificados por ano, conforme aponta a Revista do Arquivo P\u00fablico (1982). Em 1979, o Departamento de Documenta\u00e7\u00e3o e Arquivo passou a denominar-se \"Arquivo P\u00fablico de Mato Grosso\", o que por sua vez ficou alterado, no ano de 2002, para Superintend\u00eancia de Arquivo P\u00fablico. (Categoria: Acervo online)", "site": "http://atom.apmt.mt.gov.br/"}], "Minas Gerais": [{"nome": "Arquivo P\u00fablico Mineiro (fundos_colecoes)", "descricao": "O Arquivo P\u00fablico Mineiro \u2013 APM \u00e9 uma superintend\u00eancia da Secretaria de Estado de Cultura respons\u00e1vel por planejar e coordenar a gest\u00e3o de documentos, executar o recolhimento, a organiza\u00e7\u00e3o e a preserva\u00e7\u00e3o de documentos provenientes do Poder Executivo de Minas Gerais e dos arquivos privados de interesse p\u00fablico e social. (Categoria: Acervo online)", "site": "http://www.siaapm.cultura.mg.gov.br/modules/fundos_colecoes/listagem.php"}], "Bahia": [{"nome": "Museu de Arte da Bahia (MAB)", "descricao": "O Museu de Arte da Bahia \u00e9 o mais antigo museu do Estado, criado em 1918 no pr\u00e9dio anexo ao Arquivo P\u00fablico e transferido em 1982 para sua atual sede, no Corredor da Vit\u00f3ria. O seu acervo \u00e9 constitu\u00eddo por 13.686 pe\u00e7as adquiridas ao longo do tempo, atrav\u00e9s da compra pelo Estado da Bahia de obras de grandes cole\u00e7\u00f5es particulares. Inicialmente no s\u00e9culo XIX, a cole\u00e7\u00e3o de pintura do Conselheiro Jonatas Abbott, dos s\u00e9culos XVII e XVIII, de origem italiana, francesa, flamenga, holandesa, onde se destaca o quadro da Escola de Caravaggio \u201cDavid com a Cabe\u00e7a de Golias\u201d; e em 1943, a de Francisco Marques de Go\u00e9s Calmon, que re\u00fane importantes conjuntos de artes decorativas, notadamente as porcelanas orientais e o conjunto de \u201clou\u00e7a hist\u00f3rica\u201d que pertenceu a v\u00e1rios representantes da aristocracia brasileira. www.museusdabahia.ba.gov.br (Categoria: Acervo online)", "site": "http://guiademuseus.com.br/museu-de-arte-da-bahia"}]};
+
+    // Função para carregar os acervos de um estado no painel da lista
+    function loadAcervos(state) {
+        var listDiv = document.getElementById("acervo-list");
+        listDiv.innerHTML = "<h4>Acervos de " + state + "</h4>";
+        if(acervos_data[state]) {
+            acervos_data[state].forEach(function(acervo) {
+                var a = document.createElement("a");
+                a.href = "#";
+                a.textContent = acervo.nome;
+                a.style.display = "block";
+                a.style.marginBottom = "5px";
+                a.onclick = function() {
+                    showAcervoDetail(acervo);
+                };
+                listDiv.appendChild(a);
+            });
+        } else {
+            listDiv.innerHTML += "<p>Nenhum acervo encontrado.</p>";
+        }
+    }
+
+    // Função para exibir os detalhes do acervo no painel de detalhes
+    function showAcervoDetail(acervo) {
+        var detailDiv = document.getElementById("acervo-detail");
+        detailDiv.innerHTML = "<h4>" + acervo.nome + "</h4>" +
+                              "<p><b>Descrição:</b> " + acervo.descricao + "</p>" +
+                              "<p><a href='" + acervo.site + "' target='_blank'>Visitar site</a></p>" +
+                              "<iframe src='" + acervo.site + "'></iframe>";  // Atualiza o iframe
+    }
+    </script>
+    
+    
+            <div class="folium-map" id="map_9ab8afb3fc2a473d2bab020f918d551e" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_9ab8afb3fc2a473d2bab020f918d551e = L.map(
+                "map_9ab8afb3fc2a473d2bab020f918d551e",
+                {
+                    center: [-15.78, -47.93],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 4,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_f55b812af7b6b6259007e40609af5382 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_f55b812af7b6b6259007e40609af5382.addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+            var marker_ce563bfefe2ec3783fc6c56b30921f21 = L.marker(
+                [-23.55, -46.64],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_e98b9876a5f0279054c8e85cec86d16d = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_751d3e5f6a5b4f462a898c40d0941516 = $(`<div id="html_751d3e5f6a5b4f462a898c40d0941516" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('São Paulo'); return false;">Ver acervos de São Paulo</a></div>`)[0];
+                popup_e98b9876a5f0279054c8e85cec86d16d.setContent(html_751d3e5f6a5b4f462a898c40d0941516);
+            
+        
+
+        marker_ce563bfefe2ec3783fc6c56b30921f21.bindPopup(popup_e98b9876a5f0279054c8e85cec86d16d)
+        ;
+
+        
+    
+    
+            marker_ce563bfefe2ec3783fc6c56b30921f21.bindTooltip(
+                `<div>
+                     São Paulo (29 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_16accb64d130d25a2d3eb0ee6047afaf = L.marker(
+                [-22.91, -43.2],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_08affbbd290010625e070b1d57398d81 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_64621c1f0425c5ce31214755b72cf11f = $(`<div id="html_64621c1f0425c5ce31214755b72cf11f" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio de Janeiro'); return false;">Ver acervos de Rio de Janeiro</a></div>`)[0];
+                popup_08affbbd290010625e070b1d57398d81.setContent(html_64621c1f0425c5ce31214755b72cf11f);
+            
+        
+
+        marker_16accb64d130d25a2d3eb0ee6047afaf.bindPopup(popup_08affbbd290010625e070b1d57398d81)
+        ;
+
+        
+    
+    
+            marker_16accb64d130d25a2d3eb0ee6047afaf.bindTooltip(
+                `<div>
+                     Rio de Janeiro (18 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_1e72990db229bca11681c80fdc0f4a79 = L.marker(
+                [-30.0, -51.22],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_01aaea527cbab621cb9c918623f68126 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_6af4b20837b854f0107630abc3c5846f = $(`<div id="html_6af4b20837b854f0107630abc3c5846f" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio Grande do Sul'); return false;">Ver acervos de Rio Grande do Sul</a></div>`)[0];
+                popup_01aaea527cbab621cb9c918623f68126.setContent(html_6af4b20837b854f0107630abc3c5846f);
+            
+        
+
+        marker_1e72990db229bca11681c80fdc0f4a79.bindPopup(popup_01aaea527cbab621cb9c918623f68126)
+        ;
+
+        
+    
+    
+            marker_1e72990db229bca11681c80fdc0f4a79.bindTooltip(
+                `<div>
+                     Rio Grande do Sul (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_5655c85a74b2cfbff1d574627a28a1d0 = L.marker(
+                [-27.6, -48.55],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_fc0bc48f18f0ba96a910147f0356e47e = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_349847c056181740a74d2c690820abda = $(`<div id="html_349847c056181740a74d2c690820abda" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Santa Catarina'); return false;">Ver acervos de Santa Catarina</a></div>`)[0];
+                popup_fc0bc48f18f0ba96a910147f0356e47e.setContent(html_349847c056181740a74d2c690820abda);
+            
+        
+
+        marker_5655c85a74b2cfbff1d574627a28a1d0.bindPopup(popup_fc0bc48f18f0ba96a910147f0356e47e)
+        ;
+
+        
+    
+    
+            marker_5655c85a74b2cfbff1d574627a28a1d0.bindTooltip(
+                `<div>
+                     Santa Catarina (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_ee936663b3e4b2d59e0dab4ca9a4ddec = L.marker(
+                [-15.6, -49.3],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_09bbcaf202c97ca92e5d701e2f5f8eb3 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_17a9dcfbdafc75bd954df6c50f775774 = $(`<div id="html_17a9dcfbdafc75bd954df6c50f775774" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Goiás'); return false;">Ver acervos de Goiás</a></div>`)[0];
+                popup_09bbcaf202c97ca92e5d701e2f5f8eb3.setContent(html_17a9dcfbdafc75bd954df6c50f775774);
+            
+        
+
+        marker_ee936663b3e4b2d59e0dab4ca9a4ddec.bindPopup(popup_09bbcaf202c97ca92e5d701e2f5f8eb3)
+        ;
+
+        
+    
+    
+            marker_ee936663b3e4b2d59e0dab4ca9a4ddec.bindTooltip(
+                `<div>
+                     Goiás (6 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_775f1dde40314daf8130d0e268fca441 = L.marker(
+                [-12.64, -56.09],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_49b6c3b106c0b6aa16682da63edd7d86 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_c202a385030a095d4664e1a1a1f42396 = $(`<div id="html_c202a385030a095d4664e1a1a1f42396" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Mato Grosso'); return false;">Ver acervos de Mato Grosso</a></div>`)[0];
+                popup_49b6c3b106c0b6aa16682da63edd7d86.setContent(html_c202a385030a095d4664e1a1a1f42396);
+            
+        
+
+        marker_775f1dde40314daf8130d0e268fca441.bindPopup(popup_49b6c3b106c0b6aa16682da63edd7d86)
+        ;
+
+        
+    
+    
+            marker_775f1dde40314daf8130d0e268fca441.bindTooltip(
+                `<div>
+                     Mato Grosso (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e5dd9188c1ee31f06efaa9419bde121e = L.marker(
+                [-18.1, -44.1],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_d9373881184f274ebc0256824d10f8d6 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_fc70136578acf970f38aa6016757ea2f = $(`<div id="html_fc70136578acf970f38aa6016757ea2f" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Minas Gerais'); return false;">Ver acervos de Minas Gerais</a></div>`)[0];
+                popup_d9373881184f274ebc0256824d10f8d6.setContent(html_fc70136578acf970f38aa6016757ea2f);
+            
+        
+
+        marker_e5dd9188c1ee31f06efaa9419bde121e.bindPopup(popup_d9373881184f274ebc0256824d10f8d6)
+        ;
+
+        
+    
+    
+            marker_e5dd9188c1ee31f06efaa9419bde121e.bindTooltip(
+                `<div>
+                     Minas Gerais (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_4492f549195c20c10dea092777ef7cd5 = L.marker(
+                [-12.46, -41.71],
+                {
+}
+            ).addTo(map_9ab8afb3fc2a473d2bab020f918d551e);
+        
+    
+        var popup_6b46c8488ceadc0b28f6f2128c0aa0c3 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_6c8666afcf7b9d5e5f75fd63ad7a8fa4 = $(`<div id="html_6c8666afcf7b9d5e5f75fd63ad7a8fa4" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Bahia'); return false;">Ver acervos de Bahia</a></div>`)[0];
+                popup_6b46c8488ceadc0b28f6f2128c0aa0c3.setContent(html_6c8666afcf7b9d5e5f75fd63ad7a8fa4);
+            
+        
+
+        marker_4492f549195c20c10dea092777ef7cd5.bindPopup(popup_6b46c8488ceadc0b28f6f2128c0aa0c3)
+        ;
+
+        
+    
+    
+            marker_4492f549195c20c10dea092777ef7cd5.bindTooltip(
+                `<div>
+                     Bahia (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

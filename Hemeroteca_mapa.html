@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_add9eb84103b8a9ca1d08cea13f14d8c {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+    <style>
+      /* Estilo para os painéis */
+      #acervo-list {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          width: 350px;  /* Aumenta a largura da janela */
+          height: 400px;
+          overflow-y: auto;
+          background-color: white;
+          z-index: 1000;
+          padding: 5px;
+          border: 2px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 50%;  /* Define 50% da largura do mapa */
+          height: 80%;  /* Aumenta a altura da janela */
+          overflow-y: auto;
+          background-color: white;
+          z-index: 2000;
+          padding: 10px;
+          border: 4px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail iframe {
+          width: 100%;  /* Garante que o iframe ocupe toda a largura */
+          height: 600px;  /* Ajusta a altura do iframe para que a cabeça do site seja visível */
+          border: none;
+      }
+      .destaque {
+          font-size: 26px;
+          font-weight: bold;
+          color: #2d2d2d;
+          text-align: center;
+          margin-bottom: 20px;
+      }
+    </style>
+
+    <!-- Painel da lista de acervos -->
+    <div id="acervo-list">
+      <div class="destaque">Olá Usuário! Clique em qualquer região no mapa para carregar a lista de instituições!</div>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <!-- Painel de detalhes do acervo -->
+    <div id="acervo-detail">
+      <div class="destaque">Ao passar o mouse sobre o nome da instituição, os detalhes serão exibidos aqui! Mas atenção: alguns sites possuem proteções de segurança.</div>
+      <p><span style="font-size: 18px;">Caso o site não seja exibido, clique em VISITAR SITE.</span></p>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <script>
+    // Dados dos acervos, injetados a partir do Python
+    var acervos_data = {"Rio de Janeiro": [{"nome": "Arquivo Geral da Cidade do RJ (Hemerogr\u00e1fico e Bibliogr\u00e1fico)", "descricao": "Os acervos bibliogr\u00e1fico e hemerogr\u00e1fico s\u00e3o formados por cerca de 23.565 exemplares de livros e 21.954 fasc\u00edculos de peri\u00f3dicos, perfazendo um total de 45.519 itens. Al\u00e9m disso, o acervo cont\u00e9m folhetos, teses e monografias e recortes de jornais de cole\u00e7\u00f5es particulares, relativos \u00e0 cidade e \u00e0 sua hist\u00f3ria administrativa, urban\u00edstica, social, econ\u00f4mica, pol\u00edtica e cultural. (Categoria: Hemeroteca)", "site": "http://agcrjbiblioteca.rio.rj.gov.br/"}, {"nome": "Hemeroteca da BIblioteca Nacional", "descricao": "Pesquise os peri\u00f3dicos no acervo da Hemeroteca.\n Aqui voc\u00ea busca por palavras-chave nos conte\u00fados dos peri\u00f3dicos. Se estiver buscando outro tipo de publica\u00e7\u00e3o, encontre no Acervo Digital. (Categoria: Hemeroteca)", "site": "http://bndigital.bn.gov.br/hemeroteca-digital/"}, {"nome": "Brasiliana da Literatura Infantil e Juvenil", "descricao": "Este reposit\u00f3rio busca resgatar essas obras precursoras no acervo da Biblioteca Nacional e disponibiliz\u00e1-las na \u00edntegra por meio digital, respeitada a Lei do Direito Autoral para autores e ilustradores. Est\u00e3o contempladas tanto as obras traduzidas quanto as portuguesas e brasileiras que circularam anteriormente \u00e0 d\u00e9cada de 1920, incluindo as cartilhas, livros de leitura e cole\u00e7\u00f5es de contos e poemas para uso em classe. Esperamos, assim, contribuir para pesquisas na \u00e1rea da Literatura, da Leitura e da Educa\u00e7\u00e3o no Brasil. (Categoria: Hemeroteca)", "site": "http://blij.bn.gov.br/blij"}, {"nome": "MAM RIO (Biblioteca)", "descricao": "A Biblioteca do MAM Rio \u00e9 uma das mais importantes bibliotecas especializadas em arte moderna e contempor\u00e2nea do pa\u00eds. Com tem\u00e1tica que se expande para arquitetura, design e paisagismo, a biblioteca conta com cerca de 31,5 mil publica\u00e7\u00f5es (livros, cat\u00e1logos de exposi\u00e7\u00f5es e obras de refer\u00eancia) e 618 t\u00edtulos de peri\u00f3dicos. (Categoria: Hemeroteca)", "site": "http://mam.bnweb.org/scripts/bnportal/bnportal.exe/index"}, {"nome": "MAM RIO (Publica\u00e7\u00f5es do MAM)", "descricao": "PUBLICA\u00c7\u00d5ES Museu de Arte Moderna do Rio de Janeiro\n O MAM Rio publica livros de artes visuais, cinema e educa\u00e7\u00e3o.\n Clique para fazer o download gratuito em PDF. (Categoria: Hemeroteca)", "site": "http://mam.rio/publicacoes/"}, {"nome": "Instituto Hist\u00f3rico e Geogr\u00e1fico Brasileiro (IHGB) Biblioteca", "descricao": "A Biblioteca do IHGB re\u00fane, desde a funda\u00e7\u00e3o do Instituto, livros, folhetos, peri\u00f3dicos e outras publica\u00e7\u00f5es impressas, dos s\u00e9culos XVI ao XXI. Inclui cole\u00e7\u00f5es doadas por s\u00f3cios e bibli\u00f3filos, como a Biblioteca Americana de von Martius e a Cole\u00e7\u00e3o Teresa Cristina, dedicadas pelo imperador Pedro II. Na cole\u00e7\u00e3o bibliogr\u00e1fica destaca-se, por exemplo, a primeira edi\u00e7\u00e3o do Epitome de la Biblioteca Oriental i Occidental, de L\u00e9on Pinelo (1629), que apresenta a mais antiga bibliografia brasiliana de que se tem not\u00edcia, arrolando obras de autores como Thevet (1561), L\u00e9ry (1578), De Bry (1592) e d\u2019Abbeville (1614) \u2013 todas dispon\u00edveis na cole\u00e7\u00e3o da Biblioteca do IHGB. (Categoria: Hemeroteca)", "site": "http://www.ihgb.org.br/colecoes-biblioteca/"}, {"nome": "Museu do \u00cdndio (RJ) ( Biblioteca Virtual)", "descricao": "Biblioteca O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Hemeroteca)", "site": "http://www.docvirt.com/docreader.net/DocReader.aspx?bib=mi_bibliografico&pagfis=422150"}, {"nome": "Museu do \u00cdndio (RJ) (Livro e Publica\u00e7\u00f5es)", "descricao": "Bibliogr\u00e1fico parte 2. O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Hemeroteca)", "site": "http://www.gov.br/museudoindio/pt-br/centrais-de-conteudo/livros-e-publicacoes"}, {"nome": "Museu Hist\u00f3rico Nacional (Biblioteca)", "descricao": "A Biblioteca do Museu Hist\u00f3rico Nacional oferece a pesquisadores um vasto acervo, compreendendo obras do s\u00e9culo XVI ao XXI. S\u00e3o livros, folhetos, peri\u00f3dicos e materiais especiais, que abrangem temas como Arte Decorativa, Numism\u00e1tica, Filatelia, Indument\u00e1ria, Hist\u00f3ria do Brasil, Hist\u00f3ria do Rio de Janeiro, Hist\u00f3ria de Portugal, Her\u00e1ldica, Genealogia, Sigilografia, Gastronomia e Museologia. (Categoria: Hemeroteca)", "site": "http://app.docvirt.com/MHN_Lista"}, {"nome": "Biblioteca da ABI", "descricao": "Biblioteca ABI possui livros, jornais e revistas. consulta no Local (Categoria: Hemeroteca)", "site": "http://www.abi.org.br/biblioteca/"}, {"nome": "Hemeroteca Jornal O Globo", "descricao": "Edi\u00e7\u00f5es antigas do jornal (Categoria: Hemeroteca)", "site": "http://oglobo.globo.com/acervo"}], "Minas Gerais": [{"nome": "Arquivo P\u00fablico Mineiro (Biblioteca)", "descricao": "A Biblioteca do Arquivo P\u00fablico Mineiro, com cerca de 12.000 t\u00edtulos, destina-se ao atendimento da pesquisa institucional para organiza\u00e7\u00e3o de acervos e suporte \u00e0 pesquisa de seus usu\u00e1rios.\n \n Fazem parte do acervo publica\u00e7\u00f5es t\u00e9cnicas de arquivos e bibliotecas, anais e anu\u00e1rios de \u00f3rg\u00e3os p\u00fablicos estaduais e federais, mensagens e relat\u00f3rios do governo mineiro, legisla\u00e7\u00e3o estadual e federal, biografias, genealogias, bibliografia e um n\u00famero relevante de livros, peri\u00f3dicos e folhetos sobre a hist\u00f3ria de Minas Gerais, do Brasil e do Imp\u00e9rio Portugu\u00eas.\n \n Em parceria com a Superintend\u00eancia de Bibliotecas P\u00fablicas de Minas Gerais, o acervo da Biblioteca do Arquivo P\u00fablico Mineiro est\u00e1 sendo disponibilizado no Sistema Pergamum. (Categoria: Hemeroteca)", "site": "http://www.siaapm.cultura.mg.gov.br/modules/biblioteca/"}], "S\u00e3o Paulo": [{"nome": "Cinemateca Brasileira (Cole\u00e7\u00e3o de Peri\u00f3dicos)", "descricao": "Cole\u00e7\u00e3o de Peri\u00f3dicos\n Os quase dois mil t\u00edtulos de peri\u00f3dicos ocupam duas \u00e1reas da Biblioteca Paulo Emilio Salles Gomes: a indicada com RC representa os peri\u00f3dicos especializados em cinema e/ou v\u00eddeo; e a indicada com RG representa os peri\u00f3dicos de car\u00e1ter cultural mais amplo.\n Os peri\u00f3dicos especializados brasileiros e estrangeiros comp\u00f5em um conjunto de fasc\u00edculos bastante fragmentado; no entanto, re\u00fanem cole\u00e7\u00f5es bastante significativas das revistas Filmel\u00e2ndia (1954-1963), Cinel\u00e2ndia (1952-1967), Filme Cultura (1966-1988), Guia de Filmes (1967-1987), Cine Imagin\u00e1rio (1985-1990), Tabu (1986-1990), Cinemin (1982-1993), Cinemais (1996-2002), etc. Dentre os peri\u00f3dicos estrangeiros destacamos: American Cinematographer, Cahiers du Cin\u00e9ma, Bianco e Nero, Positif, Sight and Sound, Cine Cubano e Journal of the SMPTE. H\u00e1 um grande esfor\u00e7o da Biblioteca em atualizar os t\u00edtulos, preferencialmente os brasileiros.As cole\u00e7\u00f5es integralmente digitalizadas de Cinearte e de A Scena Muda, bem como a parte nelas contidas referente a cinema brasileiro e que foi catalogada pela Biblioteca Jenny Klabin Segall em parceria com a Cinemateca Brasileira, podem ser consultadas pelo site www.bjksdigital.museusegall.org.br. (Categoria: Hemeroteca)", "site": "http://bases.cinemateca.org.br/cgi-bin/wxis.exe/iah/?IsisScript=iah/iah.xis&base=PERI&lang=p"}, {"nome": "Instituto de Estudos Brasileiros (IEB - USP) Biblioteca", "descricao": "A Biblioteca do IEB \u00e9 considerada hoje uma das mais ricas em assuntos brasileiros, aproximando-se dos 250 mil volumes, incluindo livros, separatas, teses e peri\u00f3dicos. Dentre as raridades, est\u00e3o obras dos s\u00e9culos XVI, XVII e XVIII, uma das mais antigas obras do acervo da USP (Categoria: Hemeroteca)", "site": "http://www.ieb.usp.br/sobre-biblioteca/"}, {"nome": "Instituto Moreira Salles (literatura)", "descricao": "Literatura\n Explore a base de dados, que disponibiliza descri\u00e7\u00f5es de 50 mil dos cerca de 130 mil itens que comp\u00f5em os Arquivos, al\u00e9m de imagens com o conforto de zoom at\u00e9 200%. Voc\u00ea pode ver as cr\u00f4nicas de Paulo Mendes Campos publicadas na revista Manchete, ou as fotos de Ana Cristina Cesar, Clarice Lispector e Rachel de Queiroz. Surpreenda-se com as dedicat\u00f3rias de livros transcritas na base de dados da Biblioteca. (Categoria: Hemeroteca)", "site": "http://ims.com.br/acervos/pesquise-nos-acervos/#literatura"}, {"nome": "Museu da Imigra\u00e7\u00e3o hemeroteca", "descricao": "Jornais Publica\u00e7\u00f5es de col\u00f4nias de imigrantes no Brasil, com edi\u00e7\u00f5es entre os anos de 1886 e 1987. (Categoria: Hemeroteca)", "site": "http://acervodigital.museudaimigracao.org/jornais.php"}, {"nome": "Museu Paulista (Museu do Ipiranga) Biblioteca", "descricao": "A Biblioteca do Museu Paulista foi instalada no dia 07 de setembro de 1895, juntamente com a inaugura\u00e7\u00e3o do pr\u00f3prio Museu e hoje constitui-se em centro de apoio \u00e0 pesquisa cient\u00edfica de um museu universit\u00e1rio de Hist\u00f3ria. (Categoria: Hemeroteca)", "site": "http://museudoipiranga.org.br/biblioteca/"}, {"nome": "Hemeroteca Jornal Estad\u00e3o", "descricao": "Edi\u00e7\u00f5es antigas do jornal (Categoria: Hemeroteca)", "site": "http://www.estadao.com.br/acervo/"}, {"nome": "Hemeroteca Jornal Folha de S\u00e3o Paulo", "descricao": "Edi\u00e7\u00f5es antigas do jornal (Categoria: Hemeroteca)", "site": "http://acervo.folha.com.br/index.do"}, {"nome": "Hemeroteca Revista Veja", "descricao": "Edi\u00e7\u00f5es antigas da Revista (Categoria: Hemeroteca)", "site": "http://veja.abril.com.br/edicoes-veja/"}, {"nome": "Hemeroteca Jornais do Google", "descricao": "Edi\u00e7\u00f5es antigas do jornal (Categoria: Hemeroteca)", "site": "http://news.google.com/newspapers/"}, {"nome": "Livros de Fotografia (BDLF)", "descricao": "A BASE DE DADOS DE LIVROS DE FOTOGRAFIA (BDLF) \u00e9 uma plataforma digital de refer\u00eancias bibliogr\u00e1ficas que atua em tr\u00eas eixos integrados: enquanto base de dados referencial, biblioteca virtual e espa\u00e7o de reflex\u00e3o cr\u00edtica. Trata-se de um site de divulga\u00e7\u00e3o cultural e de natureza informativa, sem finalidade econ\u00f4mica e de acesso livre. (Categoria: Hemeroteca)", "site": "http://livrosdefotografia.org"}], "Goi\u00e1s": [{"nome": "Tesauro Unesco", "descricao": "O Thesaurus da UNESCO \u00e9 uma lista controlada e estruturada de termos para an\u00e1lise tem\u00e1tica e pesquisa de documentos e publica\u00e7\u00f5es nas \u00e1reas de educa\u00e7\u00e3o, cultura, ci\u00eancias naturais, ci\u00eancias sociais e humanas, comunica\u00e7\u00e3o e informa\u00e7\u00e3o. Continuamente expandida e atualizada, sua terminologia multidisciplinar reflete a evolu\u00e7\u00e3o dos programas e atividades da UNESCO. (Categoria: Hemeroteca)", "site": "http://vocabularies.unesco.org/browser/thesaurus/es/"}, {"nome": "Tesauro IBICT", "descricao": "Tesauro de \u00c9tica, Pol\u00edtica e Epistemologia para Estudos de Informa\u00e7\u00e3o / Grupo de Pesquisa Perfil-I (Categoria: Hemeroteca)", "site": "http://vocabularyserver.com/tepei/"}]};
+
+    // Função para carregar os acervos de um estado no painel da lista
+    function loadAcervos(state) {
+        var listDiv = document.getElementById("acervo-list");
+        listDiv.innerHTML = "<h4>Acervos de " + state + "</h4>";
+        if(acervos_data[state]) {
+            acervos_data[state].forEach(function(acervo) {
+                var a = document.createElement("a");
+                a.href = "#";
+                a.textContent = acervo.nome;
+                a.style.display = "block";
+                a.style.marginBottom = "5px";
+                a.onclick = function() {
+                    showAcervoDetail(acervo);
+                };
+                listDiv.appendChild(a);
+            });
+        } else {
+            listDiv.innerHTML += "<p>Nenhum acervo encontrado.</p>";
+        }
+    }
+
+    // Função para exibir os detalhes do acervo no painel de detalhes
+    function showAcervoDetail(acervo) {
+        var detailDiv = document.getElementById("acervo-detail");
+        detailDiv.innerHTML = "<h4>" + acervo.nome + "</h4>" +
+                              "<p><b>Descrição:</b> " + acervo.descricao + "</p>" +
+                              "<p><a href='" + acervo.site + "' target='_blank'>Visitar site</a></p>" +
+                              "<iframe src='" + acervo.site + "'></iframe>";  // Atualiza o iframe
+    }
+    </script>
+    
+    
+            <div class="folium-map" id="map_add9eb84103b8a9ca1d08cea13f14d8c" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_add9eb84103b8a9ca1d08cea13f14d8c = L.map(
+                "map_add9eb84103b8a9ca1d08cea13f14d8c",
+                {
+                    center: [-15.78, -47.93],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 4,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_642f08c06f121579e8cb43a4644b6469 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_642f08c06f121579e8cb43a4644b6469.addTo(map_add9eb84103b8a9ca1d08cea13f14d8c);
+        
+    
+            var marker_98b420260a17fd6841d18d16ed04613f = L.marker(
+                [-22.91, -43.2],
+                {
+}
+            ).addTo(map_add9eb84103b8a9ca1d08cea13f14d8c);
+        
+    
+        var popup_64f8b18fe392068d9cb79b605ab523b3 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_5dd644f9884074e3d2d68cbff5c4d02f = $(`<div id="html_5dd644f9884074e3d2d68cbff5c4d02f" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio de Janeiro'); return false;">Ver acervos de Rio de Janeiro</a></div>`)[0];
+                popup_64f8b18fe392068d9cb79b605ab523b3.setContent(html_5dd644f9884074e3d2d68cbff5c4d02f);
+            
+        
+
+        marker_98b420260a17fd6841d18d16ed04613f.bindPopup(popup_64f8b18fe392068d9cb79b605ab523b3)
+        ;
+
+        
+    
+    
+            marker_98b420260a17fd6841d18d16ed04613f.bindTooltip(
+                `<div>
+                     Rio de Janeiro (11 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_29fbfc22a9ee9153643b372102a4da5c = L.marker(
+                [-18.1, -44.1],
+                {
+}
+            ).addTo(map_add9eb84103b8a9ca1d08cea13f14d8c);
+        
+    
+        var popup_10cdb782d597e652a5c1df8ef9008d47 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_895105e4bf5968e7626362cec1b0f589 = $(`<div id="html_895105e4bf5968e7626362cec1b0f589" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Minas Gerais'); return false;">Ver acervos de Minas Gerais</a></div>`)[0];
+                popup_10cdb782d597e652a5c1df8ef9008d47.setContent(html_895105e4bf5968e7626362cec1b0f589);
+            
+        
+
+        marker_29fbfc22a9ee9153643b372102a4da5c.bindPopup(popup_10cdb782d597e652a5c1df8ef9008d47)
+        ;
+
+        
+    
+    
+            marker_29fbfc22a9ee9153643b372102a4da5c.bindTooltip(
+                `<div>
+                     Minas Gerais (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a3e19ad2b0084417932fd7ec70796406 = L.marker(
+                [-23.55, -46.64],
+                {
+}
+            ).addTo(map_add9eb84103b8a9ca1d08cea13f14d8c);
+        
+    
+        var popup_b30d29d68cf3e10cc90beb108af8edd8 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_07ff2f9dbfc026f673ade116ee478450 = $(`<div id="html_07ff2f9dbfc026f673ade116ee478450" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('São Paulo'); return false;">Ver acervos de São Paulo</a></div>`)[0];
+                popup_b30d29d68cf3e10cc90beb108af8edd8.setContent(html_07ff2f9dbfc026f673ade116ee478450);
+            
+        
+
+        marker_a3e19ad2b0084417932fd7ec70796406.bindPopup(popup_b30d29d68cf3e10cc90beb108af8edd8)
+        ;
+
+        
+    
+    
+            marker_a3e19ad2b0084417932fd7ec70796406.bindTooltip(
+                `<div>
+                     São Paulo (10 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e5ffacdeb1646d1fec01bd48507562cf = L.marker(
+                [-15.6, -49.3],
+                {
+}
+            ).addTo(map_add9eb84103b8a9ca1d08cea13f14d8c);
+        
+    
+        var popup_890076175237cba4276d0bc77a8a20d1 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f356436cafd50686033aca59fe8a35c0 = $(`<div id="html_f356436cafd50686033aca59fe8a35c0" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Goiás'); return false;">Ver acervos de Goiás</a></div>`)[0];
+                popup_890076175237cba4276d0bc77a8a20d1.setContent(html_f356436cafd50686033aca59fe8a35c0);
+            
+        
+
+        marker_e5ffacdeb1646d1fec01bd48507562cf.bindPopup(popup_890076175237cba4276d0bc77a8a20d1)
+        ;
+
+        
+    
+    
+            marker_e5ffacdeb1646d1fec01bd48507562cf.bindTooltip(
+                `<div>
+                     Goiás (2 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

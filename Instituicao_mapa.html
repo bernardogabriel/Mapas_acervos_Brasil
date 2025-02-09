@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_a0b51484e81c653afb210f8b575af353 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+    <style>
+      /* Estilo para os painéis */
+      #acervo-list {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          width: 350px;  /* Aumenta a largura da janela */
+          height: 400px;
+          overflow-y: auto;
+          background-color: white;
+          z-index: 1000;
+          padding: 5px;
+          border: 2px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 50%;  /* Define 50% da largura do mapa */
+          height: 80%;  /* Aumenta a altura da janela */
+          overflow-y: auto;
+          background-color: white;
+          z-index: 2000;
+          padding: 10px;
+          border: 4px solid black;
+          font-size: 20px;
+      }
+      #acervo-detail iframe {
+          width: 100%;  /* Garante que o iframe ocupe toda a largura */
+          height: 600px;  /* Ajusta a altura do iframe para que a cabeça do site seja visível */
+          border: none;
+      }
+      .destaque {
+          font-size: 26px;
+          font-weight: bold;
+          color: #2d2d2d;
+          text-align: center;
+          margin-bottom: 20px;
+      }
+    </style>
+
+    <!-- Painel da lista de acervos -->
+    <div id="acervo-list">
+      <div class="destaque">Olá Usuário! Clique em qualquer região no mapa para carregar a lista de instituições!</div>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <!-- Painel de detalhes do acervo -->
+    <div id="acervo-detail">
+      <div class="destaque">Ao passar o mouse sobre o nome da instituição, os detalhes serão exibidos aqui! Mas atenção: alguns sites possuem proteções de segurança.</div>
+      <p><span style="font-size: 18px;">Caso o site não seja exibido, clique em VISITAR SITE.</span></p>
+      <p><span style="font-size: 18px;">Última atualização: FEV.2025.</span></p>
+    </div>
+
+    <script>
+    // Dados dos acervos, injetados a partir do Python
+    var acervos_data = {"Goi\u00e1s": [{"nome": "Museu do Expedicion\u00e1rio", "descricao": "O Museu do Expedicion\u00e1rio tem como miss\u00e3o principal divulgar e difundir, para fins educativos, a participa\u00e7\u00e3o hist\u00f3rica do Brasil na 2\u00aa Guerra Mundial, por meio da preserva\u00e7\u00e3o de documentos e artefatos de guerra. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudoexpedicionario.5rm.eb.mil.br"}, {"nome": "Arquivo P\u00fablico do Distrito Federal", "descricao": "o \u00f3rg\u00e3o tem a miss\u00e3o de preservar esse material com a inten\u00e7\u00e3o de coloc\u00e1-los \u00e0 disposi\u00e7\u00e3o da sociedade, dentro da pol\u00edtica de acessibilidade adotada pelo Governo do Distrito Federal. \n O espa\u00e7o re\u00fane, principalmente, a documenta\u00e7\u00e3o que retrata a hist\u00f3ria da Capital Federal, desde o per\u00edodo da interioriza\u00e7\u00e3o, previsto na Constitui\u00e7\u00e3o de 1892, passando pela constru\u00e7\u00e3o, inaugura\u00e7\u00e3o, chegando aos dias atuais. O acervo apresenta documentos textuais, audiovisuais, cartogr\u00e1ficos, entre outros formatos. Comp\u00f5em esse acervo 21 Fundos P\u00fablicos e 23 Fundos Privados, tendo entendimento que o fundo \u00e9 um conjunto de documentos de qualquer natureza ou suporte acumulado ao longo do funcionamento de um \u00f3rg\u00e3o, institui\u00e7\u00e3o ou administra\u00e7\u00e3o do poder p\u00fablico (Fundos P\u00fablicos), assim como da trajet\u00f3ria de pessoas p\u00fablicas envolvidas com o governo (Fundos Privados). http://www.atom.arquivopublico.df.gov.br/ (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.arpdf.df.gov.br"}, {"nome": "Arquivo P\u00fablico do Estado de Goi\u00e1s (APEG)", "descricao": "O setor de Documenta\u00e7\u00e3o Avulsa possui 1,61 mil caixas-arquivos, que se referem aos diversos departamentos da administra\u00e7\u00e3o p\u00fablica estadual, de 1731 a 1973.A Hemeroteca, por sua vez, \u00e9 constitu\u00edda de 281 t\u00edtulos de jornais, representativos da imprensa goiana em microfilmes e CDs.O acervo disp\u00f5e ainda de plantas arquitet\u00f4nicas residenciais e comerciais, das primeiras edifica\u00e7\u00f5es de Goi\u00e2nia, do per\u00edodo 1936/1939 e 1940. E-mail: aheg@goias.gov.br (Categoria: Institui\u00e7\u00e3o)", "site": "http://goias.gov.br/cultura/arquivo-historico/"}], "S\u00e3o Paulo": [{"nome": "Arquivo de M\u00fasica da UNICAMP", "descricao": "A miss\u00e3o da Biblioteca \u00e9 oferecer suporte informacional aos programas de pesquisa, ensino e extens\u00e3o, desenvolvidos pelos seis departamentos do Instituto de Artes, sendo: Artes C\u00eanicas, Artes Corporais, Artes Pl\u00e1sticas, Cinema, Multimeios, M\u00eddia e Comunica\u00e7\u00e3o e M\u00fasica.\n No ano de 2000, foi criado um espa\u00e7o na Biblioteca, denominado Fonoteca, a partir de um acervo de discos de vinil do Departamento de M\u00fasica e mais duas grandes cole\u00e7\u00f5es recebidas por doa\u00e7\u00e3o do Prof. Dr. Rog\u00e9rio Cerqueira Leite e Sr. Nelson Maleski. Esta cole\u00e7\u00e3o compreende tudo o que foi produzido de melhor na m\u00fasica desde a Idade M\u00e9dia at\u00e9 o S\u00e9culo XX.No mesmo ano tamb\u00e9m foi criado um outro espa\u00e7o, denominado Videoteca, composto por VHS\u2019s, DVD\u2019s e Blu-Ray\u2019s da \u00e1rea de artes. Para visualiza\u00e7\u00e3o desses materiais, a Biblioteca disponibiliza cabines com todos os equipamentos necess\u00e1rios a seus usu\u00e1rios. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.iar.unicamp.br/biblioteca/a-biblioteca"}, {"nome": "Arquivo P\u00fablico Municipal de SP", "descricao": "O arquivo p\u00fablico municipal \u00e9 um \u00f3rg\u00e3o especificamente dedicado e respons\u00e1vel pelo conjunto de documentos produzidos, recebidos e acumulados por \u00f3rg\u00e3os p\u00fablicos municipais no exerc\u00edcio de suas atividades, ou seja, pelos poderes Executivo e Legislativo, representados, respectivamente, pela prefeitura e pela c\u00e2mara dos vereadores, em decorr\u00eancia de suas fun\u00e7\u00f5es administrativas e legislativas. (Categoria: Institui\u00e7\u00e3o)", "site": "http://arquip.prefeitura.sp.gov.br/busca.php"}, {"nome": "Canal 100 (Projeto)", "descricao": "Alexandre Niemeyer s\u00e3o (filho do Carlos Niemeyer) e-mail: aniemeyer@canal100.com.br Entretanto, supondo que o interesse seja pelo acervo do Canal 100 (afinal, \u00e9 o ano da Copa), informo que os materiais est\u00e3o depositados na Cinemateca Brasileira e temporariamente impedidos de serem acessados porque o Consultoria Jur\u00eddica do MinC est\u00e1 fazendo uma avalia\u00e7\u00e3o do contrato de aquisi\u00e7\u00e3o do acervo, pelo MinC. Estamos aguardando um posicionamento oficial que, esperamos, venha em breve. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.agenciabrasil.ebc.com.br/cultura/noticia/2024-11/cinemateca-lanca-projeto-de-recuperacao-de-acervo-do-canal-100"}, {"nome": "Museu da imigra\u00e7\u00e3o Italiana ", "descricao": "Circolo Italiano di Taubat\u00e9 - MUSEU DA IMIGRA\u00c7\u00c3O ITALIANA (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.circoloitalianoditaubate.wordpress.com"}, {"nome": "Museu da Imagem e do Som (MIS) de Campinas", "descricao": "Fundado em 1975 e sediado no Pal\u00e1cio dos Azulejos, o Museu da Imagem e do Som \u00e9 uma institui\u00e7\u00e3o que desde sua cria\u00e7\u00e3o vem preservando e difundindo um importante acervo de mem\u00f3ria audiovisual da cidade de Campinas, com centenas de equipamentos de produ\u00e7\u00e3o e reprodu\u00e7\u00e3o de imagens e sons. (Categoria: Institui\u00e7\u00e3o)", "site": "http://conheca.campinas.sp.gov.br/pois/298"}, {"nome": "Museu da Imigra\u00e7\u00e3o Japonesa", "descricao": "A Sociedade Brasileira de Cultura Japonesa e de Assist\u00eancia Social \u2013 Bunkyo foi fundada em 17 de dezembro de 1955, com uma miss\u00e3o de grande significado para a comunidade nipo-brasileira e ao relacionamento Brasil-Jap\u00e3o \u2013 organizar as comemora\u00e7\u00f5es do Cinquenten\u00e1rio da Imigra\u00e7\u00e3o Japonesa no Brasil, em 1958 O Museu possui objetos usados no dia a dia pelos imigrantes, di\u00e1rios escritos durante o desbravamento, pinturas descrevendo o seu modo de vida, livros diversos publicados, constituindo-se em um importante acervo que registra a hist\u00f3ria dos imigrantes japoneses.FOTOS O Museu tem em seu acervo cera de 10 mil fotos, cada uma delas registrando aspectos e personagens que fizeram parte da hist\u00f3ria da imigra\u00e7\u00e3o. O Museu est\u00e1 conduzindo um projeto de digitaliza\u00e7\u00e3o de todo este acervo, visando a sua preserva\u00e7\u00e3o. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.bunkyo.org.br/br/museu-historico/?fbclid=PAZXh0bgNhZW0CMTEAAaabW4GmOhhk1OBF35atgzirmN-s5f3SyQxdn9GVxgWPIt-01gP46-IdaFw_aem_m2NDAzXLZxncBF2gqG6ocw"}, {"nome": "Museu da L\u00edngua Portuguesa (SP)", "descricao": "Museu seleciona trabalhos de artistas iniciantes com o tema Falares Brasileiros (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudalinguaportuguesa.org.br"}, {"nome": "Museu do Catavento (SP)", "descricao": "O Museu Catavento atualmente abriga acervos com tipologias ligadas \u00e0 ci\u00eancia e a tecnologia. Aqui voc\u00ea encontra desde locomotivas, avi\u00f5es, f\u00f3sseis e at\u00e9 acervos vivos, como peixes e borboletas. Cerca de 70% dos objetos vieram da Funda\u00e7\u00e3o Museu da Tecnologia de S\u00e3o Paulo, cuja cole\u00e7\u00e3o \u00e9 ligada \u00e0 parte de tecnologia, al\u00e9m de fomentar aspectos hist\u00f3ricos relacionados ao Pal\u00e1cio das Ind\u00fastrias. (Categoria: Institui\u00e7\u00e3o)", "site": "http://museucatavento.org.br/"}, {"nome": "Museu do Futebol (SP)", "descricao": "Neste espa\u00e7o reunimos as hist\u00f3rias que o Museu do Futebol tem para contar. Por meio de seus mais interessantes documentos, como entrevistas, fotografias, \u00e1udios, livros, trabalhos acad\u00eamicos e alguns objetos, mostramos por qu\u00ea o futebol \u00e9 t\u00e3o importante para a cultura brasileira. Esperamos contar com voc\u00ea nessa p\u00e1gina! Se deseja compartilhar suas hist\u00f3rias sobre futebol conosco, escreva para crfb@museudofutebol.org.br. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudofutebol.org.br"}, {"nome": "Pinacoteca S\u00e3o Paulo", "descricao": "A Pinacoteca de S\u00e3o Paulo \u00e9 um museu de artes visuais voltado para a produ\u00e7\u00e3o brasileira concebida desde o s\u00e9culo XIX at\u00e9 a contemporaneidade, sempre considerando di\u00e1logos com variadas culturas do mundo. Fundada em 1905 pelo Governo do Estado de S\u00e3o Paulo, a Pinacoteca \u00e9 o museu de arte mais antigo da cidade. E, desde ent\u00e3o, vem realizando mostras de sua renomada cole\u00e7\u00e3o de arte brasileira e exposi\u00e7\u00f5es tempor\u00e1rias de artistas nacionais e internacionais. A Pinacoteca tamb\u00e9m elabora e apresenta projetos p\u00fablicos multidisciplinares, al\u00e9m de abrigar um programa educativo abrangente e inclusivo.\u200bO acervo original foi formado a partir da transfer\u00eancia de 20 obras do Museu Paulista da Universidade de S\u00e3o Paulo, juntamente com outras 6 adquiridas de importantes artistas da cidade como Almeida Ju\u0301nior, Pedro Alexandrino, Ant\u00f4nio Parreiras e Oscar Pereira da Silva, especialmente para formar a nova cole\u00e7\u00e3o. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.pinacoteca.org.br"}, {"nome": "MIAU - Museu da Imprensa Automotiva", "descricao": "O MIAU - Museu da Imprensa Automotiva dedica-se a abrigar, catalogar, preservar, divulgar, analisar, exibir e discutir a hist\u00f3ria da imprensa brasileira especializada na cobertura da ind\u00fastria automotiva, em suas mais diversas vertentes, tais como avalia\u00e7\u00e3o de produtos (autom\u00f3veis, caminh\u00f5es, \u00f4nibus, motos), esportiva, industrial, econ\u00f4mica, mercadol\u00f3gica, etc. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.miaumuseu.com.br/"}], "Rio de Janeiro": [{"nome": "Museu Judaico RJ", "descricao": "O Museu Judaico do Rio de Janeiro surgiu, em 1977, da necessidade da comunidade judaica carioca de resgatar e conservar sua hist\u00f3ria e sua mem\u00f3ria -- que se entrela\u00e7am com a mem\u00f3ria e as tradi\u00e7\u00f5es judaicas. Formada a partir da primeira d\u00e9cada do s\u00e9culo XX sobretudo por imigrantes do Leste europeu, a comunidade modificou-se com as sucessivas ondas migrat\u00f3rias, que deixaram sua marca em objetos, documentos, livros e fotos representativos de uma cultura ancestral, fonte de inspira\u00e7\u00e3o e conhecimento que as gera\u00e7\u00f5es seguintes se empenham em preservar. O Museu Judaico tamb\u00e9m \u00e9 um local de preserva\u00e7\u00e3o da mem\u00f3ria do Holocausto e homenagem aos sobreviventes, muitos deles vivendo hoje no Rio (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museujudaico.org.br/acervo.php"}, {"nome": "Biblioteca da Funda\u00e7\u00e3o Casa de Rui Barbosa", "descricao": "A Funda\u00e7\u00e3o Casa de Rui Barbosa (FCRB) \u00e9 uma institui\u00e7\u00e3o p\u00fablica federal vinculada ao Minist\u00e9rio da Cultura. Criada pela Lei n.4.943, de 1966, \"com autonomia administrativa e financeira, dotada de personalidade jur\u00eddica de direito p\u00fablico, com sede e foro no Munic\u00edpio do Rio de Janeiro\". Tem como finalidade \"o desenvolvimento da cultura, da pesquisa, do ensino e da preserva\u00e7\u00e3o de acervos\", divulgando a obra e a vida de Rui Barbosa. Al\u00e9m disso, de acordo com o artigo 1 de seu Regimento Interno (2024): (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.casaruibarbosa.gov.br"}, {"nome": "BIblioteca Nacional", "descricao": "Ao inaugurarmos a Biblioteca Digital da Funda\u00e7\u00e3o Biblioteca Nacional, temos em mente que este dispositivo indispens\u00e1vel \u00e0 nossa contemporaneidade informacional comporta mais cuidados do que aqueles normalmente privilegiados pelas pol\u00edticas tecnocient\u00edficas da mem\u00f3ria. A digitaliza\u00e7\u00e3o do impresso implica, de fato, para al\u00e9m da sua dimens\u00e3o puramente t\u00e9cnica, o tornar vis\u00edvel de toda uma crise das estruturas culturais tradicionalmente centradas no livro e na leitura individualizada. (Categoria: Institui\u00e7\u00e3o)", "site": "http://bndigital.bn.gov.br"}, {"nome": "MAM RIO (Cinemateca)", "descricao": "A Cinemateca do Museu de Arte Moderna do Rio de Janeiro \u00e9 um centro de patrim\u00f4nio e mem\u00f3ria audiovisual relacionado \u00e0 express\u00e3o por imagens e sons em movimento, n\u00e3o importando o suporte de registro, inten\u00e7\u00e3o de uso ou valora\u00e7\u00e3o s\u00f3cio-cultural.\n Segunda cinemateca mais antiga em atividade no pa\u00eds, constituiu-se com um escopo de atua\u00e7\u00e3o que abrange a preserva\u00e7\u00e3o em sentido lato e a conserva\u00e7\u00e3o em sentido estrito de toda e qualquer manifesta\u00e7\u00e3o relacionada com a atividade cinematogr\u00e1fica e mais amplamente audiovisual, nacional e internacional, de todas as \u00e9pocas, tomando sempre como refer\u00eancia a cria\u00e7\u00e3o atrav\u00e9s de imagens em movimento.S\u00e3o mais de 7.000 t\u00edtulos em 35mm e 16mm, e cerca de 60.000 em base videomagn\u00e9tica anal\u00f3gica e digital e em m\u00eddias \u00f3ticas, o que \u00e9 complementado pela maior cole\u00e7\u00e3o documental sobre cinema do pa\u00eds, com quase 3 milh\u00f5es de itens. (Categoria: Institui\u00e7\u00e3o)", "site": "http://mam.rio/cinemateca/sobre-a-cinemateca/"}, {"nome": "Funda\u00e7\u00e3o Get\u00falio Vargas (FGV)", "descricao": "O acervo do CPDOC \u00e9 constitu\u00eddo por documentos manuscritos, impressos e audiovisuais, al\u00e9m de depoimentos de hist\u00f3ria oral e verbetes tem\u00e1ticos e biogr\u00e1ficos. Grande parte est\u00e1 dispon\u00edvel gratuitamente para consulta presencial ou virtual. \n A sala de consulta, localizada na Casa Acervo, \u00e9 o local onde os pesquisadores podem consultar, gratuitamente, os documentos que j\u00e1 se encontram organizados, contando com a orienta\u00e7\u00e3o de profissionais especializados. (Categoria: Institui\u00e7\u00e3o)", "site": "http://cpdoc.fgv.br"}, {"nome": "Funarte", "descricao": "Criada em 1975, a Funda\u00e7\u00e3o Nacional de Artes \u2013 Funarte \u00e9 o \u00f3rg\u00e3o do Governo Federal brasileiro cuja miss\u00e3o \u00e9 promover e incentivar a produ\u00e7\u00e3o, a pr\u00e1tica, o desenvolvimento e a difus\u00e3o das artes no pa\u00eds. \u00c9 respons\u00e1vel pelas pol\u00edticas p\u00fablicas federais de est\u00edmulo \u00e0 atividade produtiva art\u00edstica brasileiras; e atua para que a popula\u00e7\u00e3o possa cada vez mais usufruir das artes. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.funarte.gov.br"}, {"nome": "Museu da Imagem e do Som do Rio de Janeiro", "descricao": "O Acervo \u00e9 formado com 42 cole\u00e7\u00f5es particulares de grandes personalidades da nossa cultura. Com mais de 650 mil itens, documentos nos mais variados suportes: fotografias em papel, negativos em vidro, negativos estereosc\u00f3picos, cartazes, gravuras, discos, filmes, fitas de v\u00eddeo e de \u00e1udio (formatos diversos), documentos textuais, partituras e objetos tridimensionais (instrumentos musicais, indument\u00e1ria, medalhas, trof\u00e9us, etc.). O Museu da Imagem e do SOM (MIS) muito al\u00e9m de uma institui\u00e7\u00e3o dedicada a buscar, conservar, estudar e expor objetos de interesse ou de valor art\u00edstico e/ou hist\u00f3rico, \u00e9 um museu de forte mem\u00f3ria afetiva, que lida no seu dia a dia com recorda\u00e7\u00f5es de sons e imagens. Quem nunca ouviu uma m\u00fasica, viu uma fotografia do Rio antigo ou assistiu a um filme que remetesse um momento particular de sua host\u00f3ria? Grande parte destas mem\u00f3rias est\u00e3o guardadas no MIS, que possui em seu acervo, aproximadamente, 650 mil itens, entre discos, fotografias, v\u00eddeos e tantos outros acervos que demonstram o que \u00e9 ser brasileiro, o que \u00e9 ser carioca. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.mis.rj.gov.br"}, {"nome": "Museu da Rep\u00fablica (RJ)", "descricao": "O Arquivo Hist\u00f3rico e Institucional do Museu da Rep\u00fablica (AHI/MR) \u00e9 composto por dois grandes conjuntos de documentos: o Arquivo Hist\u00f3rico composto por 29 cole\u00e7\u00f5es relacionadas a personagens ou acontecimentos que marcaram de alguma forma a hist\u00f3ria republicana brasileira; e o Arquivo Institucional com a documenta\u00e7\u00e3o resultante da trajet\u00f3ria de funcionamento do Museu da Rep\u00fablica desde sua cria\u00e7\u00e3o em 1960.\n As consultas ao acervo do AHI/MR podem ser realizadas de segunda \u00e0 sexta-feira, entre 10h e 17h, sendo necess\u00e1rio agendamento pr\u00e9vio pelo email mr.arquivo@museus.gov.br (Categoria: Institui\u00e7\u00e3o)", "site": "http://museudarepublica.museus.gov.br/acervo-e-pesquisa/"}, {"nome": "Museu de Arte Contempor\u00e2nea de Niter\u00f3i (MAC Niter\u00f3i)", "descricao": "Esse conjunto \u00e9 formado (2021) por 1.832 obras, divididas entre as duas cole\u00e7\u00f5es do museu: a Cole\u00e7\u00e3o Sattamini conta com 1.219 obras de artistas do per\u00edodo concreto, neoconcreto, abstrato informal e neoexpressionista, enquanto na Cole\u00e7\u00e3o MAC, somam-se 613 obras, de 129 artistas. As duas cole\u00e7\u00f5es abrangem obras de diversos materiais e t\u00e9cnicas, sendo as mais comuns esculturas, desenhos, grafites e telas. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.macniteroi.com.br"}, {"nome": "Museu de Arte do Rio (MAR)", "descricao": "Desde 2013, a Cole\u00e7\u00e3o MAR est\u00e1 sendo formada a partir da contribui\u00e7\u00e3o e doa\u00e7\u00e3o de artistas, galerias, colecionadores, institui\u00e7\u00f5es p\u00fablicas e privadas e demais atores da sociedade civil interessados na composi\u00e7\u00e3o de uma cole\u00e7\u00e3o de arte p\u00fablica . O acervo de um museu n\u00e3o se resume somente aos objetos que est\u00e3o em exposi\u00e7\u00e3o. Em vez disso, a maior parte do acervo fica armazenado em um local chamado de Reserva T\u00e9cnica. Para guardar esta crescente cole\u00e7\u00e3o, foi inaugurada, em 2017, uma Nova Reserva T\u00e9cnica. A necessidade de amplia\u00e7\u00e3o do espa\u00e7o foi fruto da bem-sucedida forma\u00e7\u00e3o da Cole\u00e7\u00e3o MAR que, em 10 anos, reuniu mais de 21 mil itens distribu\u00eddos em: 10.000 obras museol\u00f3gicas, 8.000 itens documentais e 3.000 livros da Cole\u00e7\u00e3o Especial (livros raros e livros de artista). A obra foi realizada com o patroc\u00ednio do BNDES e foi planejada para ser um espa\u00e7o visit\u00e1vel atrav\u00e9s um aqu\u00e1rio de vidro, de onde \u00e9 poss\u00edvel observar as obras que est\u00e3o distribu\u00eddas no mobili\u00e1rio desenhado sob medida, al\u00e9m do trabalho t\u00e9cnico da museologia, nas a\u00e7\u00f5es de invent\u00e1rio, conserva\u00e7\u00e3o preventiva e acondicionamento das pe\u00e7as, realizado no local. As reservas t\u00e9cnicas dos museus s\u00e3o \u00e1reas de acesso restrito por quest\u00f5es de seguran\u00e7a, mas, ao partilhar o acervo que pode ser apreciado em toda a sua complexidade, fica o convite ao visitante para que se aproprie da heran\u00e7a cultural musealizada na institui\u00e7\u00e3o e para que compreenda a import\u00e2ncia do papel de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o desse patrim\u00f4nio, realizado pelo Museu de Arte do Rio (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudeartedorio.org.br"}, {"nome": "Museu do \u00cdndio (RJ)", "descricao": "O Museu Nacional dos Povos Ind\u00edgenas \u00e9 o \u00f3rg\u00e3o cient\u00edfico-cultural da Funda\u00e7\u00e3o Nacional dos Povos Ind\u00edgenas - Funai respons\u00e1vel pela pol\u00edtica de preserva\u00e7\u00e3o e divulga\u00e7\u00e3o do patrim\u00f4nio cultural dos povos ind\u00edgenas no Brasil. Tem sob sua guarda um significativo conjunto de bens culturais de natureza arquiv\u00edstica, museol\u00f3gica e bibliogr\u00e1fica sobre esses povos. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudoindio.gov.br"}, {"nome": "Museu Nacional de Belas Artes (MNBA)", "descricao": "Situado no centro hist\u00f3rico do Rio de Janeiro, em edif\u00edcio de arquitetura ecl\u00e9tica, projetado em 1908 pelo arquiteto Adolfo Morales de los Rios para sediar a Escola Nacional de Belas Artes, herdeira da Academia Imperial de Belas Artes, o Museu Nacional de Belas Artes/Ibram/MinC foi constru\u00eddo durante as moderniza\u00e7\u00f5es urban\u00edsticas realizadas pelo prefeito Pereira Passos na ent\u00e3o Capital Federal. (Categoria: Institui\u00e7\u00e3o)", "site": "http://linktr.ee/mnbabr?fbclid=PAZXh0bgNhZW0CMTEAAaZH1qnryKOLd1Z4h5cqjjkSILOCDjCaxVFvufQ__jhAJ9c7qiKzqazL2YU_aem_KJLbmHfVbejj96ichLjLOA"}, {"nome": "Museu do Samba", "descricao": "Com um acervo \u00fanico, o Museu possui hoje mais de 45 mil itens. Nosso n\u00facleo de educa\u00e7\u00e3o patrimonial \u00e9 considerado refer\u00eancia. Realizamos diversas a\u00e7\u00f5es que difundem e promovem a valoriza\u00e7\u00e3o do samba, principal refer\u00eancia identit\u00e1ria do povo brasileiro.\n O Museu do Samba nasceu como Centro Cultural Cartola, fundado em 2001 pelos netos de Cartola e Dona Zica, lideran\u00e7as da comunidade onde a institui\u00e7\u00e3o est\u00e1 sediada, na cidade do Rio de Janeiro, RJ.\n Desde 2007, \u00e9 respons\u00e1vel pela salvaguarda das Matrizes do Samba do Rio de Janeiro registradas como patrim\u00f4nio imaterial pelo IPHAN. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudosamba.org.br"}, {"nome": "Manchete (site)", "descricao": "Uma das mais marcantes TVs do pa\u00eds, a Manchete foi ousada e inovadora. Com estrutura e conte\u00fado sofisticados, virou refer\u00eancia em jornalismo, novelas, infantis, e num carnaval grandioso. Adotou a excel\u00eancia como princ\u00edpio e dobrou apostas, at\u00e9 mesmo diante de fracassos, alternando fortes crises com per\u00edodos de euforia impens\u00e1veis. (Categoria: Institui\u00e7\u00e3o)", "site": "http://manchete.org/historia/a-historia-da-tv-manchete/"}, {"nome": "Repia", "descricao": "A Repia tem como objetivo reunir pesquisadoras e pesquisadores \u2013 e respectivos grupos de pesquisa, laborat\u00f3rios, institui\u00e7\u00f5es, organiza\u00e7\u00f5es e coletivos -, interessados nos arquivos audiovisuais, na busca de informa\u00e7\u00f5es sobre suas origens e deslocamentos, na investiga\u00e7\u00e3o dos circuitos que percorrem e no interesse sobre como sobrevivem aos desgastes do tempo (Categoria: Institui\u00e7\u00e3o)", "site": "http://repia.com.br"}, {"nome": "A Brasiliana Museus", "descricao": "O A Brasiliana Museus \u00e9 a nova plataforma online de eventos da Semana Nacional de Museus e da Primavera dos Museus, criada pelo Instituto Brasileiro de Museus (Ibram) que visa contribuir com a difus\u00e3o e promo\u00e7\u00e3o dos museus, ampliar o acesso \u00e0 cultura, assegurar a preserva\u00e7\u00e3o do patrim\u00f4nio, estimular a educa\u00e7\u00e3o, a inclus\u00e3o social, a acessibilidade e a divulga\u00e7\u00e3o do conhecimento ultrapassando as fronteiras f\u00edsicas e chegando a um p\u00fablico (nacional ou internacional) mais amplo. (Categoria: Institui\u00e7\u00e3o)", "site": "http://visite.museus.gov.br"}, {"nome": "Museu Imagens do Inconsciente", "descricao": "Na escola viva que eram os ateli\u00eas de pintura e modelagem, a escola que eu freq\u00fcentava cada dia, constantemente levantavam-se problemas. Dificuldades que conduziam a estudos apaixonantes e muitas vezes tornavam necess\u00e1ria a procura de ajuda fora do campo da psiquiatria \u2013 na arte, nos mitos, religi\u00f5es, literatura, onde sempre encontraram formas de express\u00e3o as mais profundas emo\u00e7\u00f5es humanas.\n \n Nise da Silveira Criado como um centro de estudo e pesquisa, o Museu de Imagens do Inconsciente cuida e divulga um importante patrim\u00f4nio da humanidade, mantendo sempre as portas abertas a pesquisadores e ao p\u00fablico em geral.\n  Seus Ateli\u00eas Terap\u00eauticos recebem diariamente frequentadores que criam novos documentos pl\u00e1sticos e compartilham suas experi\u00eancias no conv\u00edvio com estudantes, pesquisadores ou visitantes. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museuimagensdoinconsciente.org.br/sobre"}, {"nome": "Sitio Burle Marx", "descricao": "A casa onde Roberto Burle Marx morou faz parte do roteiro museol\u00f3gico que permite ao visitante conhecer todos os seus c\u00f4modos. (Categoria: Institui\u00e7\u00e3o)", "site": "http://sitioburlemarx.org/"}, {"nome": "Museu do Amanh\u00e3", "descricao": "O Museu do Amanh\u00e3 \u00e9 um museu de ci\u00eancias diferente. Um ambiente de ideias, explora\u00e7\u00f5es e perguntas sobre a \u00e9poca de grandes mudan\u00e7as em que vivemos e os diferentes caminhos que se abrem para o futuro. O Amanh\u00e3 n\u00e3o \u00e9 uma data no calend\u00e1rio, n\u00e3o \u00e9 um lugar aonde vamos chegar. \u00c9 uma constru\u00e7\u00e3o da qual participamos todos, como pessoas, cidad\u00e3os, membros da esp\u00e9cie humana. E por que um Museu do Amanh\u00e3? Porque vivemos em uma nova era, em que o conjunto da atividade humana tornou-se uma for\u00e7a de alcance planet\u00e1rio. Somos capazes de intervir na escala de mol\u00e9culas e de continentes (Categoria: Institui\u00e7\u00e3o)", "site": "http://museudoamanha.org.br/"}, {"nome": "Museu Sele\u00e7\u00e3o Brasileira", "descricao": "O Museu Sele\u00e7\u00e3o Brasileira \u00e9 um museu interativo localizado na Barra da Tijuca, no Rio de Janeiro. O museu conta com trof\u00e9us, fotos, camisas, v\u00eddeos e tecnologia de \u00faltima gera\u00e7\u00e3o (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museuselecaobrasileira.com.br"}], "Alagoas": [{"nome": "Arquivo P\u00fablico de Alagoas (APA)", "descricao": "O Arquivo P\u00fablico de Alagoas foi criado em 30 de dezembro de 1961, com a san\u00e7\u00e3o da Lei N\u00ba 2.428 para guardar e preservar todos os livros e documentos relativos ao servi\u00e7o p\u00fablico do estado ou que interessam \u00e0 Hist\u00f3ria de Alagoas. Dos poro\u0303es do Pala\u0301cio Floriano Peixoto, o professor Moacir Medeiros de Sant\u2019Ana conseguiu resgatar milhares de volumes raros como: livro de registro de patentes, alvara\u0301s, proviso\u0303es e portarias; julgamento de processos legais; processos de demarcac\u0327o\u0303es de terras; registro de cartas de concessa\u0303o de sesmarias; corresponde\u0302ncia ativa e passiva de presidentes da Provi\u0301ncia; auto\u0301grafos de leis e decretos, dentre outras reli\u0301quias como uma colec\u0327a\u0303o de jornais que, sob contrato, publicavam o expediente do governo alagoano de 1859 a 1911, antes da criac\u0327a\u0303o do Dia\u0301rio Oficial. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.arquivopublico.al.gov.br"}], "Mato Grosso do Sul": [{"nome": "Arquivo P\u00fablico de Mato Grosso do Sul (APMS)", "descricao": "Funda\u00e7\u00e3o de Cultura de Mato Grosso do Sul As a\u00e7\u00f5es de fomento e desenvolvimento das artes, dos costumes, das tradi\u00e7\u00f5es e do patrim\u00f4nio sul-mato-grossense s\u00e3o de responsabilidade da Funda\u00e7\u00e3o de Cultura de Mato Grosso do Sul, que orienta as pol\u00edticas p\u00fablicas estabelecidas pelo Governo do Estado.Criada em 6 de dezembro de 1983 (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.fundacaodecultura.ms.gov.br"}], "Pernambuco": [{"nome": "Arquivo P\u00fablico de Pernambuco (APEJE)", "descricao": "a p\u00e1gina oficial da Secretaria de Cultura e da Funda\u00e7\u00e3o do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico de Pernambuco (Fundarpe). \u00c9 uma ferramenta de comunica\u00e7\u00e3o especialmente elaborada para dar ainda mais visibilidade aos nossos artistas e grupos culturais. O Cultura.PE \u00e9 um projeto em permanente constru\u00e7\u00e3o e aprimoramento. Sugest\u00f5es de pautas s\u00e3o bem-vindas e devem ser enviadas para: ascom@cultura.pe.gov.br | comunicaculturape@gmail.com (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.fundarpe.pe.gov.br"}, {"nome": "Rede de Museus da UFPE", "descricao": "A Rede de Museus da UFPE \u00e9 uma rede organizada de institui\u00e7\u00f5es museol\u00f3gicas, baseada na ades\u00e3o volunt\u00e1ria, configurada de forma progressiva e que visa \u00e0 coordena\u00e7\u00e3o, articula\u00e7\u00e3o, media\u00e7\u00e3o, qualifica\u00e7\u00e3o e coopera\u00e7\u00e3o entre os museus, cole\u00e7\u00f5es cient\u00edficas visit\u00e1veis e galerias de arte da Universidade. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.ufpe.br/agencia/noticias/-/asset_publisher/dlhi8nsrz4hK/content/institucionalizada-rede-de-museus-da-universidade-federal-de-pernambuco/40615"}, {"nome": "Museu do Canga\u00e7o (Pernambuco)", "descricao": "Grande acervo do Canga\u00e7o. O acervo \u00e9 um dos maiores do Brasil: s\u00e3o mais de 2.300 pe\u00e7as entre fotografias, objetos da \u00e9poca, armas, moedas, etc. No Museu do Canga\u00e7o tem documentos \u2013 como bilhetes escritos pelo pr\u00f3prio punho de Lampi\u00e3o, laudos m\u00e9dicos e raio-x das cabe\u00e7as dos cangaceiros quando decepadas pela pol\u00edcia e mat\u00e9rias de jornais de v\u00e1rias \u00e9pocas enfocando Lampi\u00e3o e o canga\u00e7o, fotografias e document\u00e1rios. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudocangaco.com.br"}, {"nome": "Museu do Homem do Nordeste (FUNDAJ)", "descricao": "Fundado em 1979, pelo soci\u00f3logo Gilberto Freyre, o Museu do Homem do Nordeste - Muhne \u00e9 um museu federal vinculado \u00e0 Funda\u00e7\u00e3o Joaquim Nabuco / Minist\u00e9rio da Educa\u00e7\u00e3o, e tem a miss\u00e3o de pesquisar, documentar, preservar, difundir e atualizar o rico patrim\u00f4nio cultural, material e imaterial do Nordeste do Brasil. O Muhne nasceu da jun\u00e7\u00e3o de tr\u00eas extintos museus: Museu de Antropologia, Museu de Arte Popular e Museu do A\u00e7\u00facar, o que possibilitou reunir um acervo representativo da forma\u00e7\u00e3o hist\u00f3rica, \u00e9tnica e social da regi\u00e3o. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.gov.br/fundaj/pt-br/composicao/dimeca-1/museu-do-homem-do-nordeste-1"}, {"nome": "Museu do Sert\u00e3o", "descricao": "O resgate e a preserva\u00e7\u00e3o da hist\u00f3ria do homem sertanejo em todos os seus aspectos. O acervo \u00e9 constitu\u00eddo por mais de tr\u00eas mil objetos divididas nas alas: Acervo Arqueol\u00f3gico; Fauna e Flora; Casa Sertaneja; Jardim Sertanejo; Cultura e Economia; Navega\u00e7\u00e3o; Petrolina Ontem; Religiosidade; Galeria dos Prefeitos. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museusdepernambuco.pe.gov.br/espaco/1671/#info"}, {"nome": "Funda\u00e7\u00e3o Joaquim Nabuco", "descricao": "Funda\u00e7\u00e3o Joaquim Nabuco (Categoria: Institui\u00e7\u00e3o)", "site": "http://ead.fundaj.gov.br"}], "Roraima": [{"nome": "Arquivo P\u00fablico de Roraima", "descricao": "n\u00e3o existe hospedagem https://dibrarq.arquivonacional.gov.br/index.php/arquivo-estadual-de-roraima (Categoria: Institui\u00e7\u00e3o)", "site": "http://secult.rr.gov.br"}], "Sergipe": [{"nome": "Arquivo P\u00fablico de Sergipe (APSE)", "descricao": "Arquivo P\u00fablico do Estado de Sergipe (APES) constitui-se como um importante espa\u00e7o de preserva\u00e7\u00e3o de jornais e peri\u00f3dicos produzidos desde o final do s\u00e9culo XIX at\u00e9 os dias atuais no Estado de Sergipe.\n Nela, s\u00e3o salvaguardados, 64 (sessenta e quatro) t\u00edtulos de jornais, ou seja, 64 m\u00eddias que existiram ou ainda existem. Nosso jornal mais antigo presente no APES, \u00e9 o \u201cRecopilador Sergipano\u201d, cuja publica\u00e7\u00e3o refere-se \u00e0 edi\u00e7\u00e3o n\u00ba 229, impressa no m\u00eas de agosto de 1834. \n O jornal comp\u00f5e a cole\u00e7\u00e3o particular Sebr\u00e3o Sobrinho, o qual possui uma diversidade de documentos que est\u00e3o entre os mais acessados pelos pesquisadores e a comunidade interessada na hist\u00f3ria do nosso Estado. (Categoria: Institui\u00e7\u00e3o)", "site": "http://apes.seduc.se.gov.br"}], "Rond\u00f4nia": [{"nome": "Arquivo P\u00fablico do Estado de Rond\u00f4nia (museu da memoria rondoniense)", "descricao": "O Centro de Documenta\u00e7\u00e3o Hist\u00f3rica de Rond\u00f4nia existe de 1981 e \u00e9 um espa\u00e7o destinado a preserva\u00e7\u00e3o e manuten\u00e7\u00e3o de documentos de interesse hist\u00f3rico, de valor permanente. Seu acervo \u00e9 formado por livros sobre a regi\u00e3o e pelos jornais Alto Madeira, O Guapor\u00e9, A Tribuna e o Estad\u00e3o do Norte, al\u00e9m de revistas e cadernos referentes a Rond\u00f4nia. Nele h\u00e1 reunidos mais 10 mil obras entre fotos, negativos, mapas, plantas, cartas, jornais, livros e mem\u00f3rias. site antigo: www.archivorondonia.ro.gov.br (Categoria: Institui\u00e7\u00e3o)", "site": "http://rondonia.ro.gov.br/funcer/institucional/museu-da-memoria-rondoniense/centro-de-documentacao/"}], "Acre": [{"nome": "Arquivo P\u00fablico do Estado do Acre (APEAC)", "descricao": "Arquivo P\u00fablico do Estado do Acre (APEAC) (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.cultura.ac.gov.br"}], "Amazonas": [{"nome": "Arquivo P\u00fablico do Estado do Amazonas (APEA)", "descricao": "Arquivo P\u00fablico do Estado do Amazonas (APEA) (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.cultura.am.gov.br"}, {"nome": "Museu do Folclore de Parintins (AM)", "descricao": "Parintins - O Museu da Cidade de Parintins, instalado no Pal\u00e1cio Cordovil, um dos maiores patrim\u00f4nios p\u00fablicos parintinenses e sede do Poder Executivo em 1969, est\u00e1 aberto para visita\u00e7\u00e3o desde o dia 6 de junho para turistas que desejam conhecer um pouco mais da hist\u00f3ria da cidade (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museufolcloreparintins.com.br"}], "Cear\u00e1": [{"nome": "Arquivo P\u00fablico do Estado do Cear\u00e1", "descricao": "Arquivo P\u00fablico do Estado do Cear\u00e1 (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.secult.ce.gov.br/category/programacao/arquivo-publico-programacao/"}, {"nome": "Museu do Cear\u00e1", "descricao": "O Museu do Cear\u00e1 foi a primeira institui\u00e7\u00e3o museol\u00f3gica oficial do Estado, criada por decreto em 1932, mas aberto oficialmente ao p\u00fablico em janeiro de 1933 com a denomina\u00e7\u00e3o de Museu Hist\u00f3rico do Cear\u00e1. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudoceara.ce.gov.br"}], "Maranh\u00e3o": [{"nome": "Arquivo P\u00fablico do Estado do Maranh\u00e3o (APEM)", "descricao": "O Arquivo P\u00fablico do Estado do Maranh\u00e3o - APEM disponibiliza atrav\u00e9s de um sistema web seu acervo digital, o qual passa a integrar a Rede de Acervos da FAPEMA, conforme um dos objetivos do Edital n\u00ba 031/2012 \u2013 ADOC, voltado \u00e0 preserva\u00e7\u00e3o, conserva\u00e7\u00e3o e difus\u00e3o dos documentos hist\u00f3ricos do Estado do Maranh\u00e3o.Est\u00e3o disponibilizados acervos como os Fundos: Secretaria do Governo com as s\u00e9ries: Junta de Miss\u00f5es, Registros de Patentes, Registros Gerais, Correspond\u00eancias do Governo com v\u00e1rias autoridades entre outras e, C\u00e2mara Municipal de S\u00e3o Lu\u00eds. (Categoria: Institui\u00e7\u00e3o)", "site": "http://apem.cultura.ma.gov.br/siapem/index.php#"}], "Paran\u00e1": [{"nome": "Arquivo P\u00fablico do Estado do Paran\u00e1 (APEP)", "descricao": "Registro de Imigrantes\n Esta parte do acervo da Se\u00e7\u00e3o de Documenta\u00e7\u00e3o Permanente do DEAP \u00e9 alvo de interesse, principalmente, daqueles que fazem pesquisa sobre a genealogia de suas fam\u00edlias ou para complemento documental em processos de dupla cidadania. O Programa de Preserva\u00e7\u00e3o de Documentos teve in\u00edcio em 1995 e seu objetivo \u00e9 estabelecer medidas para estabilizar ou amenizar os processos de degrada\u00e7\u00e3o do acervo, prolongando o tempo de vida e a qualidade de acesso \u00e0s informa\u00e7\u00f5es. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.administracao.pr.gov.br/ArquivoPublico"}, {"nome": "Cinemateca de Curitiba", "descricao": "Criada em abril de 1975, no antigo Museu Guido Viaro, a Cinemateca de Curitiba foi respons\u00e1vel pela forma\u00e7\u00e3o de uma gera\u00e7\u00e3o de cineastas e cin\u00e9filos na cidade. Um dos trabalhos que deu proje\u00e7\u00e3o nacional \u00e0 Cinemateca foi o de pesquisa e recupera\u00e7\u00e3o de filmes antigos, permitindo resgatar os primeiros filmes paranaenses. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.fundacaoculturaldecuritiba.com.br/espacos-culturais/cinemateca-de-curitiba"}, {"nome": "Funda\u00e7\u00e3o Cultural de Curitiba", "descricao": "A Funda\u00e7\u00e3o Cultural de Curitiba nasceu do processo de transforma\u00e7\u00f5es urbanas vivenciado pela cidade nas d\u00e9cadas de 1960 e 1970, que envolvia, al\u00e9m de uma s\u00e9rie de a\u00e7\u00f5es de planejamento, uma pol\u00edtica de preserva\u00e7\u00e3o da cultura e da hist\u00f3ria da cidade. A defini\u00e7\u00e3o do Setor Hist\u00f3rico, a cria\u00e7\u00e3o do Centro de Criatividade de Curitiba e a inaugura\u00e7\u00e3o do Teatro do Paiol, no in\u00edcio dos anos 70, contribu\u00edram para amadurecer a proposta de um \u00f3rg\u00e3o municipal espec\u00edfico para gerenciar as atividades culturais \u2013 at\u00e9 ent\u00e3o a cargo do Departamento de Rela\u00e7\u00f5es P\u00fablicas e Promo\u00e7\u00f5es da Prefeitura.\n \n Ao Paiol e ao Centro de Criatividade vieram se somar outros espa\u00e7os, como a Casa Rom\u00e1rio Martins (1973), a Cinemateca de Curitiba (1975), o Teatro Universit\u00e1rio de Curitiba e o Circo Chic-Chic (1976), o Teatro do Pi\u00e1 (1978), o Solar do Bar\u00e3o (1980), a Casa da Mem\u00f3ria (1981), a Gibiteca (1982), o Museu Municipal de Arte (1988), o Teatro Novelas Curitibanas (1992), o Conservat\u00f3rio de M\u00fasica Popular Brasileira (1993), o Memorial de Curitiba (1996), a Casa Erbo Stenzel, o Teatro Cleon Jacques e a rede de bibliotecas da FCC \u2013 atualmente Casas da Leitura (1998), a Casa Hoffmann (2003), o Espa\u00e7o Cultural Capela Santa Maria (2008), o Cine Passeio (2019), o Coreto Digital (2020), a Escola de Patrim\u00f4nio (2020) e o Memorial Paranista (2021). (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.fundacaoculturaldecuritiba.com.br"}, {"nome": "Museu da Imagem e do Som MIS Cascavel Paran\u00e1", "descricao": "O Museu da Imagem e do Som do Paran\u00e1 tem por finalidade resgatar, preservar e divulgar a mem\u00f3ria do audiovisual paranaense. Criado em 06 de fevereiro de 1969, o MIS-PR \u00e9 o segundo mais antigo do pa\u00eds na \u00e1rea, atr\u00e1s somente do MIS-RJ. O MIS-PR \u00e9 detentor de um acervo com mais de tr\u00eas milh\u00f5es de itens dentre o acervo fotogr\u00e1fico, acervo de filmes (em v\u00eddeo e pel\u00edcula), acervo de \u00e1udio e a cole\u00e7\u00e3o tridimensional. (Categoria: Institui\u00e7\u00e3o)", "site": "https://www.mis.pr.gov.br/"}], "Piau\u00ed": [{"nome": "Arquivo P\u00fablico do Estado do Piau\u00ed (APEP)", "descricao": "O acervo do Arquivo P\u00fablico do Estado do Piau\u00ed, foi constitu\u00eddo no momento da sua cria\u00e7\u00e3o, pela documenta\u00e7\u00e3o da Secretaria de Governo, abrangendo, naquela data, documentos dos s\u00e9culos XVIII e XIX. Essa documenta\u00e7\u00e3o que de fato criou o Arquivo P\u00fablico, foi oficializada pela Lei n\u00ba 533 de 1909, no governo do Senhor An\u00edsio Auto de Abreu. Em meados do s\u00e9culo XX, os arquivos permanentes dos Poderes Judici\u00e1rio e Legislativo passam tamb\u00e9m o compor o seu acervo, al\u00e9m de peri\u00f3dicos, fotografias, e livros , Hoje, o Arquivo P\u00fablico \u00e9 guardi\u00e3o do maior acervo documental do Estado do Piau\u00ed, consultado por pesquisadores brasileiros e estrangeiros, constitu\u00ed, sem de d\u00favida um espa\u00e7o de mem\u00f3ria privilegiado para a constru\u00e7\u00e3o da Hist\u00f3ria Nacional. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.arquivopublico.pi.gov.br"}], "Rio Grande do Norte": [{"nome": "Arquivo P\u00fablico do Estado do Rio Grande do Norte (APER)", "descricao": "Onde est\u00e1 o Arquivo P\u00fablico do RN? https://navegos.com.br/onde-esta-o-arquivo-publico-do-rn/ (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.apern.rn.gov.br"}], "Rio Grande do Sul": [{"nome": "Arquivo P\u00fablico do Estado do Rio Grande do Sul", "descricao": "O Arquivo P\u00fablico do Estado do Rio Grande do Sul (APERS) foi criado em oito de mar\u00e7o de 1906, pelo Decreto 876, por determina\u00e7\u00e3o do ent\u00e3o presidente do Estado, Ant\u00f4nio Augusto Borges de Medeiros. Para saber mais sobre nosso hist\u00f3rico clique aqui, aqui para ver nosso v\u00eddeo institucional e aqui para acessar nossas atribui\u00e7\u00f5es (art. 34 ao 37). Atualmente o APERS \u00e9 um Departamento da Secretaria de Planejamento, Or\u00e7amento e Gest\u00e3o (SEPLAG) e \u00e9 constitu\u00eddo pela Divis\u00e3o de Gest\u00e3o Documental (DIGED), pela Divis\u00e3o de Preserva\u00e7\u00e3o, Acesso e Difus\u00e3o (DIPAD) e pela Se\u00e7\u00e3o de Apoio Administrativo (SEAAD). Conta com um grupo de trabalho formado por arquivistas, analistas em assuntos culturais, agentes administrativos, estagi\u00e1rios, terceirizados e cargos em comiss\u00e3o. Neste espa\u00e7o de nosso blog voc\u00ea poder\u00e1 conhecer um pouco mais a respeito da estrutura organizacional do APERS, suas linhas de a\u00e7\u00e3o, seus servidores e colaboradores. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.apers.rs.gov.br"}, {"nome": "Museu da Comunica\u00e7\u00e3o Hipolito da Costa RS", "descricao": "O Museu da Comunica\u00e7\u00e3o Hip\u00f3lito Jos\u00e9 da Costa (MCHJC) \u00e9 um museu brasileiro, localizado em Porto Alegre. O museu foi idealizado pelo jornalista e professor universit\u00e1rio S\u00e9rgio Roberto Dillenburg, que a partir de 1972, em uma s\u00e9rie de artigos publicados no Correio do Povo, preocupou-se com o destino que teriam importantes cole\u00e7\u00f5es estatais de jornais antigos que ele sabia estarem h\u00e1 anos se deteriorando, esquecidas num s\u00f3t\u00e3o da Secretaria de Educa\u00e7\u00e3o e Cultura. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museudacomunicacao.rs.gov.br"}, {"nome": "Museu de Arte do Rio Grande do Sul (MARGS)", "descricao": "O N\u00facleo de Acervos e Pesquisa do MARGS \u00e9 respons\u00e1vel pela guarda, documenta\u00e7\u00e3o, cataloga\u00e7\u00e3o, organiza\u00e7\u00e3o e gerenciamento dos Acervos Art\u00edstico e Documental do museu, fornecendo subs\u00eddios para a pesquisa, o estudo, a conserva\u00e7\u00e3o, o restauro e a exibi\u00e7\u00e3o de obras, documentos e demais itens pertencentes ao museu. Ao zelar pela manuten\u00e7\u00e3o dos acervos mantidos sob guarda do MARGS, atua no sentido de garantir a sua preserva\u00e7\u00e3o e conserva\u00e7\u00e3o.O Acervo Art\u00edstico do MARGS\n Consulta ao Acervo Art\u00edstico do MARGS, O Acervo Documental do MARGS, Consulta ao Acervo Documental do MARGS, Empr\u00e9stimo de obras e de itens dos acervos, Propostas de doa\u00e7\u00e3o de obras e documentos, Solicita\u00e7\u00e3o de pesquisa, Solicita\u00e7\u00e3o de uso de imagem de obras (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.margs.rs.gov.br"}], "Tocantins": [{"nome": "Arquivo P\u00fablico do Estado do Tocantins (APET)", "descricao": "Arquivo P\u00fablico do Estado do Tocantins (APET) (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.cultura.to.gov.br/arquivo-publico"}], "Minas Gerais": [{"nome": "Arquivo P\u00fablico Mineiro", "descricao": "O Arquivo P\u00fablico Mineiro \u2013 APM \u00e9 uma superintend\u00eancia da Secretaria de Estado de Cultura respons\u00e1vel por planejar e coordenar a gest\u00e3o de documentos, executar o recolhimento, a organiza\u00e7\u00e3o e a preserva\u00e7\u00e3o de documentos provenientes do Poder Executivo de Minas Gerais e dos arquivos privados de interesse p\u00fablico e social. O APM disp\u00f5e de uma biblioteca especializada em hist\u00f3ria de Minas Gerais e arquivologia e uma cole\u00e7\u00e3o de obras consideradas raras ou preciosas, publicadas entre os s\u00e9culos XVI e XX. O Arquivo P\u00fablico Mineiro recebe visitas t\u00e9cnica e de grupos interessados em conhecer a Institui\u00e7\u00e3o nas quais s\u00e3o apresentados seu hist\u00f3rico, seu trabalho, suas instala\u00e7\u00f5es e uma amostra da variedade do seu acervo. O agendamento pode ser feito pelo e-mail daip.apm@secult.mg.gov.br. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.siaapm.cultura.mg.gov.br"}, {"nome": "Centro de Refer\u00eancia Audiovisual - CRAV", "descricao": "O Centro de Refer\u00eancia Audiovisual tem acervo que ultrapassa 35 mil t\u00edtulos. A proposta \u00e9 disponibilizar trechos de aproximadamente 30 segundos de filmes que apresentam aspectos diversos da capital mineira, abordando temas como pol\u00edtica, sociabilidade, cultura, esportes e educa\u00e7\u00e3o, entre outros assuntos. Est\u00e3o disponibilizados apenas filmes de que a institui\u00e7\u00e3o municipal possui direitos https://www.pousoeprosa.com.br/publico/atrativo_turistico/visualiza/9 (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.bhfazcultura.pbh.gov.br/crav_painel"}, {"nome": "Museu do Ouro (Minas Gerais)", "descricao": "No ano de 1937, os descendentes do Comendador S\u00e9ptimo da Paula Rocha venderam o im\u00f3vel da antiga Casa de Intend\u00eancia e Fundi\u00e7\u00e3o de Sabar\u00e1, praticamente em ru\u00ednas, para o engenheiro Louis Ensch, diretor da Companhia Sider\u00fargica Belgo-Mineira, que o doou, dois anos depois, ao governo brasileiro. Em 30 de outubro de 1940, o governo federal transferiu a tutela administrativa e patrimonial do pr\u00e9dio para o ent\u00e3o Servi\u00e7o do Patrim\u00f4nio Hist\u00f3rico e Art\u00edstico Nacional \u2013 SPHAN, \u00f3rg\u00e3o do Minist\u00e9rio da Educa\u00e7\u00e3o e Sa\u00fade que o restaurou para transform\u00e1-lo em um museu que documentasse e sintetizasse a hist\u00f3ria da minera\u00e7\u00e3o do ouro na antiga Capitania de Minas Gerais. (Categoria: Institui\u00e7\u00e3o)", "site": "http://museudoouro.museus.gov.br/historico/"}, {"nome": "Museu Hist\u00f3rico Ab\u00edlio Barreto", "descricao": "Inaugurado em 1943, o Museu Hist\u00f3rico Ab\u00edlio Barreto - MHAB, como museu da cidade, dedica-se \u00e0 hist\u00f3ria, \u00e0 pesquisa, \u00e0 produ\u00e7\u00e3o e \u00e0 difus\u00e3o do conhecimento sobre Belo Horizonte. Contribui tamb\u00e9m para fortalecer os la\u00e7os de pertencimento identit\u00e1rio e estabelecer di\u00e1logo permanente para a constru\u00e7\u00e3o coletiva das mem\u00f3rias locais. (Categoria: Institui\u00e7\u00e3o)", "site": "http://prefeitura.pbh.gov.br/fundacao-municipal-de-cultura/museus/mhab?fbclid=PAZXh0bgNhZW0CMTEAAaYhaccP4YjCJKS4XbKaG0RRUWjeBvsXqa1d1IDJm6P4XF_KM7BETZTDSvU_aem_DqIkG8Z6r4ojnHQ0FhxrsA"}, {"nome": "Funda\u00e7\u00e3o Museu Mariano Proc\u00f3pio", "descricao": "O acervo, constitu\u00eddo de cerca de 53 mil objetos de valor hist\u00f3rico, art\u00edstico e cient\u00edfico, faz do Museu Mariano Proc\u00f3pio um dos mais importantes n\u00facleos de saber do pa\u00eds. Trata-se de uma cole\u00e7\u00e3o nacional e de relev\u00e2ncia internacional, entre pinturas, esculturas, gravuras, desenhos, livros raros, documentos, fotografias, mobili\u00e1rio, prataria, armaria, numism\u00e1tica, cartofilia, indument\u00e1ria, porcelanas, cristais e pe\u00e7as de Hist\u00f3ria Natural. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.pjf.mg.gov.br/administracao_indireta/mapro/"}], "Santa Catarina": [{"nome": "Cinemateca Catarinense", "descricao": "SITE EM CONTRU\u00c7\u00c3O. Fundada em 19 de maio de 1986, a Cinemateca Catarinense ABD/SC \u00e9 uma das mais antigas associa\u00e7\u00f5es e espa\u00e7os de luta do setor audiovisual no pa\u00eds com atividades ininterruptas at\u00e9 o presente. Criada por um grupo de jovens com desejo de fazer, pensar e resguardar a mem\u00f3ria do cinema regional, a Cinemateca se consolidou ao longo dos anos como a principal entidade de representa\u00e7\u00e3o pol\u00edtica do setor audiovisual catarinense, em especial, ap\u00f3s passar a representar a Associa\u00e7\u00e3o Brasileira de Documentaristas e Curta-metragistas (ABD/SC) em nosso Estado. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.cinematecacatarinense.org.br/"}, {"nome": "A Funda\u00e7\u00e3o Catarinense de Cultura (FCC),", "descricao": "A Funda\u00e7\u00e3o Catarinense de Cultura (FCC), pessoa jur\u00eddica de direito p\u00fablico, foi criada oficialmente em 24 de abril de 1979 pelo Decreto Estadual n\u00ba 7439. Tem como miss\u00e3o valorizar a cultura por meio de a\u00e7\u00f5es que estimulem, promovam e preservem a mem\u00f3ria e a produ\u00e7\u00e3o art\u00edstica catarinense. (Categoria: Institui\u00e7\u00e3o)", "site": "http://cultura.sc.gov.br/a-fcc/sobre/historico"}], "Par\u00e1": [{"nome": "Cinemateca Paraense", "descricao": "O projeto Cinemateca Paraense \u00e9 dedicado ao filmes, realizadores e ao universo cinematogr\u00e1fico do cinema e do audiovisual do Par\u00e1, com o objetivo de preservar, documentar, catalogar e difundir filmes, imagens e informa\u00e7\u00f5es relevantes para salvaguardar a mem\u00f3ria do nosso patrim\u00f4nio audiovisual. (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.cinematecaparaense.wordpress.com"}, {"nome": "Museu da Imagem e do Som do Par\u00e1 ", "descricao": "O MIS restaura e guarda em acervo mais de 5 mil itens, cole\u00e7\u00f5es (L\u00edbero Luxardo, Milton Mendon\u00e7a, Giovanni Gallo, Cinema Paraense, Altino Pimenta, Waldemar Henrique e outras) e pe\u00e7as avulsas em suporte audiovisual (pel\u00edculas cinematogr\u00e1ficas, VHS, DVD, CD, fitas cassete e de rolo e disco em vinil); equipamentos audiovisuais antigos (Projetores 35mm, 16mm e Super-8 mm; c\u00e2meras fotogr\u00e1ficas e v\u00eddeo, c\u00e2meras de est\u00fadio de TV; aparelhos de TV; gravadores de som); al\u00e9m de cartazes, partituras, fotografias, roteiros, etc. Al\u00e9m disso o Par\u00e1 existem outros museus : Museu do C\u00edrio, Museu de Gemas, Museu de Arte Sacra do Par\u00e1, Memorial da Cabanagem, Museu do Estado do Par\u00e1.Espa\u00e7o Cultural Casa das Onze Janelas, Museu Forte do Pres\u00e9pio, Museu Amaz\u00f4nico da Navega\u00e7\u00e3o, Museu da Imagem e do Som, Memorial do Porto e Arqueologia, Memorial Ver\u00f4nica Temb\u00e9, Museu do Maraj\u00f3, Memorial Faciola, Memorial Parque Cemit\u00e9rio Soledade (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.museus.pa.gov.br/listagem/90/4/colecoes"}, {"nome": "Museu de Arte de Bel\u00e9m (MABE)", "descricao": "Museu de Arte de Bel\u00e9m (MABE) \u00e9 um museu p\u00fablico municipal localizado na cidade de Bel\u00e9m, capital do estado do Par\u00e1, Brasil. Fundado em 1991, \u00e9 subordinado \u00e0 Funda\u00e7\u00e3o Cultural do Munic\u00edpio de Bel\u00e9m. Sua sede \u00e9 o Pal\u00e1cio Ant\u00f4nio Lemos, edifica\u00e7\u00e3o em estilo neocl\u00e1ssico erguido na segunda metade do s\u00e9culo XIX para ser sede da Intend\u00eancia Municipal, tombado pelo poder p\u00fablico nas inst\u00e2ncias federal, estadual e municipal.\n \n O acervo, de mais de 1.500 obras, \u00e9 composto por pinturas, esculturas, desenhos, gravuras, fotografias e exemplares de artes aplicadas (mobili\u00e1rio e porcelana), procedentes do Brasil e do exterior e produzidos entre os s\u00e9culos XVIII e XX. (Categoria: Institui\u00e7\u00e3o)", "site": "http://mabe.belem.pa.gov.br/"}, {"nome": "Museu Paraense Em\u00edlio Goeldi", "descricao": "Museu Paraense Em\u00edlio Goeldi (Categoria: Institui\u00e7\u00e3o)", "site": "http://www.gov.br/museugoeldi/pt-br"}]};
+
+    // Função para carregar os acervos de um estado no painel da lista
+    function loadAcervos(state) {
+        var listDiv = document.getElementById("acervo-list");
+        listDiv.innerHTML = "<h4>Acervos de " + state + "</h4>";
+        if(acervos_data[state]) {
+            acervos_data[state].forEach(function(acervo) {
+                var a = document.createElement("a");
+                a.href = "#";
+                a.textContent = acervo.nome;
+                a.style.display = "block";
+                a.style.marginBottom = "5px";
+                a.onclick = function() {
+                    showAcervoDetail(acervo);
+                };
+                listDiv.appendChild(a);
+            });
+        } else {
+            listDiv.innerHTML += "<p>Nenhum acervo encontrado.</p>";
+        }
+    }
+
+    // Função para exibir os detalhes do acervo no painel de detalhes
+    function showAcervoDetail(acervo) {
+        var detailDiv = document.getElementById("acervo-detail");
+        detailDiv.innerHTML = "<h4>" + acervo.nome + "</h4>" +
+                              "<p><b>Descrição:</b> " + acervo.descricao + "</p>" +
+                              "<p><a href='" + acervo.site + "' target='_blank'>Visitar site</a></p>" +
+                              "<iframe src='" + acervo.site + "'></iframe>";  // Atualiza o iframe
+    }
+    </script>
+    
+    
+            <div class="folium-map" id="map_a0b51484e81c653afb210f8b575af353" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_a0b51484e81c653afb210f8b575af353 = L.map(
+                "map_a0b51484e81c653afb210f8b575af353",
+                {
+                    center: [-15.78, -47.93],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 4,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_680757c88f0a77187725896f6a9382aa = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_680757c88f0a77187725896f6a9382aa.addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+            var marker_bd09565eef8968dfedb65240f682503d = L.marker(
+                [-15.6, -49.3],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_03e61edcf1324a00ec951f55e67cc19e = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_d36a554acd4b813bd73c0ce6176ee1b6 = $(`<div id="html_d36a554acd4b813bd73c0ce6176ee1b6" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Goiás'); return false;">Ver acervos de Goiás</a></div>`)[0];
+                popup_03e61edcf1324a00ec951f55e67cc19e.setContent(html_d36a554acd4b813bd73c0ce6176ee1b6);
+            
+        
+
+        marker_bd09565eef8968dfedb65240f682503d.bindPopup(popup_03e61edcf1324a00ec951f55e67cc19e)
+        ;
+
+        
+    
+    
+            marker_bd09565eef8968dfedb65240f682503d.bindTooltip(
+                `<div>
+                     Goiás (3 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a9aaed507df7b5c22da056086986d097 = L.marker(
+                [-23.55, -46.64],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_2817e18a99abf0f96fe33f88c454e33a = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_7b76f0ae0eae99e92c5898eca9b5105b = $(`<div id="html_7b76f0ae0eae99e92c5898eca9b5105b" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('São Paulo'); return false;">Ver acervos de São Paulo</a></div>`)[0];
+                popup_2817e18a99abf0f96fe33f88c454e33a.setContent(html_7b76f0ae0eae99e92c5898eca9b5105b);
+            
+        
+
+        marker_a9aaed507df7b5c22da056086986d097.bindPopup(popup_2817e18a99abf0f96fe33f88c454e33a)
+        ;
+
+        
+    
+    
+            marker_a9aaed507df7b5c22da056086986d097.bindTooltip(
+                `<div>
+                     São Paulo (11 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_eff7ee57a47610b2d094dc089b5cd159 = L.marker(
+                [-22.91, -43.2],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_202a948f5b239c701260b88420412b25 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f538eadc8377443c11a47dd0eeec69af = $(`<div id="html_f538eadc8377443c11a47dd0eeec69af" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio de Janeiro'); return false;">Ver acervos de Rio de Janeiro</a></div>`)[0];
+                popup_202a948f5b239c701260b88420412b25.setContent(html_f538eadc8377443c11a47dd0eeec69af);
+            
+        
+
+        marker_eff7ee57a47610b2d094dc089b5cd159.bindPopup(popup_202a948f5b239c701260b88420412b25)
+        ;
+
+        
+    
+    
+            marker_eff7ee57a47610b2d094dc089b5cd159.bindTooltip(
+                `<div>
+                     Rio de Janeiro (20 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a22432802aa1bf2a9973798314f388f2 = L.marker(
+                [-9.71, -36.73],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_33091dd33679d36f837081dd42f15316 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_9913536f9ff3d4701e55b8708db53815 = $(`<div id="html_9913536f9ff3d4701e55b8708db53815" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Alagoas'); return false;">Ver acervos de Alagoas</a></div>`)[0];
+                popup_33091dd33679d36f837081dd42f15316.setContent(html_9913536f9ff3d4701e55b8708db53815);
+            
+        
+
+        marker_a22432802aa1bf2a9973798314f388f2.bindPopup(popup_33091dd33679d36f837081dd42f15316)
+        ;
+
+        
+    
+    
+            marker_a22432802aa1bf2a9973798314f388f2.bindTooltip(
+                `<div>
+                     Alagoas (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7a478b15ad3daf10eec0396699f1f371 = L.marker(
+                [-20.51, -54.55],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_3a6b343993cd8ba02a0caf48784c4a9e = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_af2c5af893398a5b9b4d53a3763205cc = $(`<div id="html_af2c5af893398a5b9b4d53a3763205cc" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Mato Grosso do Sul'); return false;">Ver acervos de Mato Grosso do Sul</a></div>`)[0];
+                popup_3a6b343993cd8ba02a0caf48784c4a9e.setContent(html_af2c5af893398a5b9b4d53a3763205cc);
+            
+        
+
+        marker_7a478b15ad3daf10eec0396699f1f371.bindPopup(popup_3a6b343993cd8ba02a0caf48784c4a9e)
+        ;
+
+        
+    
+    
+            marker_7a478b15ad3daf10eec0396699f1f371.bindTooltip(
+                `<div>
+                     Mato Grosso do Sul (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a559494407695f3a6da8b4d5b8733cf4 = L.marker(
+                [-8.28, -35.07],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_63551163ffccb54d30903ed29d6a2220 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_a5cda8819aef0440542a82605936003f = $(`<div id="html_a5cda8819aef0440542a82605936003f" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Pernambuco'); return false;">Ver acervos de Pernambuco</a></div>`)[0];
+                popup_63551163ffccb54d30903ed29d6a2220.setContent(html_a5cda8819aef0440542a82605936003f);
+            
+        
+
+        marker_a559494407695f3a6da8b4d5b8733cf4.bindPopup(popup_63551163ffccb54d30903ed29d6a2220)
+        ;
+
+        
+    
+    
+            marker_a559494407695f3a6da8b4d5b8733cf4.bindTooltip(
+                `<div>
+                     Pernambuco (6 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_f1f3c22103eb5ee72fb42f9b4e5952e2 = L.marker(
+                [2.82, -60.67],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_8616ab205875f0752de2b411c38a4a5b = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_d105fc6fa7b82369db15e47c7bf2ca90 = $(`<div id="html_d105fc6fa7b82369db15e47c7bf2ca90" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Roraima'); return false;">Ver acervos de Roraima</a></div>`)[0];
+                popup_8616ab205875f0752de2b411c38a4a5b.setContent(html_d105fc6fa7b82369db15e47c7bf2ca90);
+            
+        
+
+        marker_f1f3c22103eb5ee72fb42f9b4e5952e2.bindPopup(popup_8616ab205875f0752de2b411c38a4a5b)
+        ;
+
+        
+    
+    
+            marker_f1f3c22103eb5ee72fb42f9b4e5952e2.bindTooltip(
+                `<div>
+                     Roraima (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_dff9a1cc6b3d07f222831dec4603c203 = L.marker(
+                [-10.57, -37.45],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_b0076561ff95b13a6f8029043c2a2051 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_42d9d1cad46a26cfcd28e1c478de0b08 = $(`<div id="html_42d9d1cad46a26cfcd28e1c478de0b08" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Sergipe'); return false;">Ver acervos de Sergipe</a></div>`)[0];
+                popup_b0076561ff95b13a6f8029043c2a2051.setContent(html_42d9d1cad46a26cfcd28e1c478de0b08);
+            
+        
+
+        marker_dff9a1cc6b3d07f222831dec4603c203.bindPopup(popup_b0076561ff95b13a6f8029043c2a2051)
+        ;
+
+        
+    
+    
+            marker_dff9a1cc6b3d07f222831dec4603c203.bindTooltip(
+                `<div>
+                     Sergipe (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_d2b0a1f7fe10f89f7dcb57081593887a = L.marker(
+                [-10.83, -63.73],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_b56a2835e7f32d2aea1bac6b3200a736 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_06e21a83d9d04d628757865141164296 = $(`<div id="html_06e21a83d9d04d628757865141164296" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rondônia'); return false;">Ver acervos de Rondônia</a></div>`)[0];
+                popup_b56a2835e7f32d2aea1bac6b3200a736.setContent(html_06e21a83d9d04d628757865141164296);
+            
+        
+
+        marker_d2b0a1f7fe10f89f7dcb57081593887a.bindPopup(popup_b56a2835e7f32d2aea1bac6b3200a736)
+        ;
+
+        
+    
+    
+            marker_d2b0a1f7fe10f89f7dcb57081593887a.bindTooltip(
+                `<div>
+                     Rondônia (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_cf17e088492448b209d5668ea5559b27 = L.marker(
+                [-8.77, -70.55],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_fda9c6ff938b8709476c95c708d3b7f5 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_d4fc9a467f302879b40a04c045f02dea = $(`<div id="html_d4fc9a467f302879b40a04c045f02dea" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Acre'); return false;">Ver acervos de Acre</a></div>`)[0];
+                popup_fda9c6ff938b8709476c95c708d3b7f5.setContent(html_d4fc9a467f302879b40a04c045f02dea);
+            
+        
+
+        marker_cf17e088492448b209d5668ea5559b27.bindPopup(popup_fda9c6ff938b8709476c95c708d3b7f5)
+        ;
+
+        
+    
+    
+            marker_cf17e088492448b209d5668ea5559b27.bindTooltip(
+                `<div>
+                     Acre (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_d140dfc63267cda0138b0137b7906c45 = L.marker(
+                [-3.12, -60.7],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_c2d235100c1dd379b0e68b654e2de2a5 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_23494cab57cbc306e04a0a019dcabbab = $(`<div id="html_23494cab57cbc306e04a0a019dcabbab" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Amazonas'); return false;">Ver acervos de Amazonas</a></div>`)[0];
+                popup_c2d235100c1dd379b0e68b654e2de2a5.setContent(html_23494cab57cbc306e04a0a019dcabbab);
+            
+        
+
+        marker_d140dfc63267cda0138b0137b7906c45.bindPopup(popup_c2d235100c1dd379b0e68b654e2de2a5)
+        ;
+
+        
+    
+    
+            marker_d140dfc63267cda0138b0137b7906c45.bindTooltip(
+                `<div>
+                     Amazonas (2 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_fb980ef43ba95e12f4727ebccaa65730 = L.marker(
+                [-5.2, -39.5],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_bf87c4a90b32186bff2d5d9da507728c = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_11f1b3f05a5f8b038aeee33c13ff3ded = $(`<div id="html_11f1b3f05a5f8b038aeee33c13ff3ded" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Ceará'); return false;">Ver acervos de Ceará</a></div>`)[0];
+                popup_bf87c4a90b32186bff2d5d9da507728c.setContent(html_11f1b3f05a5f8b038aeee33c13ff3ded);
+            
+        
+
+        marker_fb980ef43ba95e12f4727ebccaa65730.bindPopup(popup_bf87c4a90b32186bff2d5d9da507728c)
+        ;
+
+        
+    
+    
+            marker_fb980ef43ba95e12f4727ebccaa65730.bindTooltip(
+                `<div>
+                     Ceará (2 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7a69d2a546abc7aaa3b833bad9c95699 = L.marker(
+                [-5.42, -46.3],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_449755eee8477aff9f203a80cccbd3f0 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_0045e5c3977b97a893279654ef18afe6 = $(`<div id="html_0045e5c3977b97a893279654ef18afe6" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Maranhão'); return false;">Ver acervos de Maranhão</a></div>`)[0];
+                popup_449755eee8477aff9f203a80cccbd3f0.setContent(html_0045e5c3977b97a893279654ef18afe6);
+            
+        
+
+        marker_7a69d2a546abc7aaa3b833bad9c95699.bindPopup(popup_449755eee8477aff9f203a80cccbd3f0)
+        ;
+
+        
+    
+    
+            marker_7a69d2a546abc7aaa3b833bad9c95699.bindTooltip(
+                `<div>
+                     Maranhão (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a6025cf2efcdd06405c0bd0647d92a65 = L.marker(
+                [-24.89, -51.55],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_09180253a272ffb25d1c21411fa7998f = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_dd8ddb35a6c1a733f404efe8ddf17595 = $(`<div id="html_dd8ddb35a6c1a733f404efe8ddf17595" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Paraná'); return false;">Ver acervos de Paraná</a></div>`)[0];
+                popup_09180253a272ffb25d1c21411fa7998f.setContent(html_dd8ddb35a6c1a733f404efe8ddf17595);
+            
+        
+
+        marker_a6025cf2efcdd06405c0bd0647d92a65.bindPopup(popup_09180253a272ffb25d1c21411fa7998f)
+        ;
+
+        
+    
+    
+            marker_a6025cf2efcdd06405c0bd0647d92a65.bindTooltip(
+                `<div>
+                     Paraná (4 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3bb7547a1ae1ea0eb4ccb71f4e667843 = L.marker(
+                [-5.49, -42.28],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_3ce66a927f0e12090a4750877318f07b = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f18788b4cac23847dfb4f52b6e7d7f44 = $(`<div id="html_f18788b4cac23847dfb4f52b6e7d7f44" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Piauí'); return false;">Ver acervos de Piauí</a></div>`)[0];
+                popup_3ce66a927f0e12090a4750877318f07b.setContent(html_f18788b4cac23847dfb4f52b6e7d7f44);
+            
+        
+
+        marker_3bb7547a1ae1ea0eb4ccb71f4e667843.bindPopup(popup_3ce66a927f0e12090a4750877318f07b)
+        ;
+
+        
+    
+    
+            marker_3bb7547a1ae1ea0eb4ccb71f4e667843.bindTooltip(
+                `<div>
+                     Piauí (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a60e6f0d1977db8e952f16c381c26840 = L.marker(
+                [-5.39, -36.59],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_1209820584e606f6257a7fd8906fec37 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_b6eef05ce750f0652de27559a6c8272d = $(`<div id="html_b6eef05ce750f0652de27559a6c8272d" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio Grande do Norte'); return false;">Ver acervos de Rio Grande do Norte</a></div>`)[0];
+                popup_1209820584e606f6257a7fd8906fec37.setContent(html_b6eef05ce750f0652de27559a6c8272d);
+            
+        
+
+        marker_a60e6f0d1977db8e952f16c381c26840.bindPopup(popup_1209820584e606f6257a7fd8906fec37)
+        ;
+
+        
+    
+    
+            marker_a60e6f0d1977db8e952f16c381c26840.bindTooltip(
+                `<div>
+                     Rio Grande do Norte (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_69b05a6c4391eac06819a7af08d24ffe = L.marker(
+                [-30.0, -51.22],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_bef7f20c8df2670feb44921bbeec7685 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_65c396603ca382866d605085919d6912 = $(`<div id="html_65c396603ca382866d605085919d6912" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Rio Grande do Sul'); return false;">Ver acervos de Rio Grande do Sul</a></div>`)[0];
+                popup_bef7f20c8df2670feb44921bbeec7685.setContent(html_65c396603ca382866d605085919d6912);
+            
+        
+
+        marker_69b05a6c4391eac06819a7af08d24ffe.bindPopup(popup_bef7f20c8df2670feb44921bbeec7685)
+        ;
+
+        
+    
+    
+            marker_69b05a6c4391eac06819a7af08d24ffe.bindTooltip(
+                `<div>
+                     Rio Grande do Sul (3 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a46f208163eefac131419343529ad7cc = L.marker(
+                [-10.17, -48.25],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_ff67835feea2de8724d36a87cfb2a994 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_c7da4c9aff7b54cc5284159d40d2420e = $(`<div id="html_c7da4c9aff7b54cc5284159d40d2420e" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Tocantins'); return false;">Ver acervos de Tocantins</a></div>`)[0];
+                popup_ff67835feea2de8724d36a87cfb2a994.setContent(html_c7da4c9aff7b54cc5284159d40d2420e);
+            
+        
+
+        marker_a46f208163eefac131419343529ad7cc.bindPopup(popup_ff67835feea2de8724d36a87cfb2a994)
+        ;
+
+        
+    
+    
+            marker_a46f208163eefac131419343529ad7cc.bindTooltip(
+                `<div>
+                     Tocantins (1 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_adb960ad216a97621b63e37428c67707 = L.marker(
+                [-18.1, -44.1],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_e51a494d594726e64423e5fcb6e369a1 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_a449e5129d011057663def867a9a8824 = $(`<div id="html_a449e5129d011057663def867a9a8824" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Minas Gerais'); return false;">Ver acervos de Minas Gerais</a></div>`)[0];
+                popup_e51a494d594726e64423e5fcb6e369a1.setContent(html_a449e5129d011057663def867a9a8824);
+            
+        
+
+        marker_adb960ad216a97621b63e37428c67707.bindPopup(popup_e51a494d594726e64423e5fcb6e369a1)
+        ;
+
+        
+    
+    
+            marker_adb960ad216a97621b63e37428c67707.bindTooltip(
+                `<div>
+                     Minas Gerais (5 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e8ab56560f5ca9b4c003f8399139391e = L.marker(
+                [-27.6, -48.55],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_4bf650dca4556f2d259b54ca80c0abdb = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_80b6869a5bc8325e253e48407ec8168a = $(`<div id="html_80b6869a5bc8325e253e48407ec8168a" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Santa Catarina'); return false;">Ver acervos de Santa Catarina</a></div>`)[0];
+                popup_4bf650dca4556f2d259b54ca80c0abdb.setContent(html_80b6869a5bc8325e253e48407ec8168a);
+            
+        
+
+        marker_e8ab56560f5ca9b4c003f8399139391e.bindPopup(popup_4bf650dca4556f2d259b54ca80c0abdb)
+        ;
+
+        
+    
+    
+            marker_e8ab56560f5ca9b4c003f8399139391e.bindTooltip(
+                `<div>
+                     Santa Catarina (2 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_9904629cbeee11d0118c61fdf55d2bc9 = L.marker(
+                [-5.6, -52.3],
+                {
+}
+            ).addTo(map_a0b51484e81c653afb210f8b575af353);
+        
+    
+        var popup_a7e9f065968bb7590b291580257a3365 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_e9f7dbcd669ef454319e581c2187361b = $(`<div id="html_e9f7dbcd669ef454319e581c2187361b" style="width: 100.0%; height: 100.0%;"><a href='#' onclick="loadAcervos('Pará'); return false;">Ver acervos de Pará</a></div>`)[0];
+                popup_a7e9f065968bb7590b291580257a3365.setContent(html_e9f7dbcd669ef454319e581c2187361b);
+            
+        
+
+        marker_9904629cbeee11d0118c61fdf55d2bc9.bindPopup(popup_a7e9f065968bb7590b291580257a3365)
+        ;
+
+        
+    
+    
+            marker_9904629cbeee11d0118c61fdf55d2bc9.bindTooltip(
+                `<div>
+                     Pará (4 acervo(s))
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>
